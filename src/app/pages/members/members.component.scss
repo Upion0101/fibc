@@ -1,0 +1,49 @@
+.cards {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.card.member {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  text-align: center;
+
+  .member-photo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  h3 {
+    margin: 0.5rem 0;
+    color: var(--primary);
+  }
+
+  .role {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .contact {
+    font-size: 0.9rem;
+    color: var(--muted);
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+
+    a:hover {
+      color: var(--secondary);
+      text-decoration: underline;
+    }
+  }
+}

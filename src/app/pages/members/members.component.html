@@ -1,0 +1,20 @@
+<section class="section">
+  <div class="container">
+    <h1>Meet Our Leaders</h1>
+    <p class="muted center">Here’s a look at our pastors and leaders. Fill in with real info later.</p>
+
+    <div class="cards">
+      <article class="card member" *ngFor="let m of members">
+        <img [src]="m.photo" [alt]="m.name" class="member-photo" />
+        <h3>{{ m.name }}</h3>
+        <p class="role">{{ m.role }}</p>
+        <p class="contact">
+          Email: <a [href]="'mailto:' + m.email">{{ m.email.replace('@','&#64;') }}</a>
+        </p>
+        <p class="contact">
+          Phone: <a [href]="'tel:' + m.phone">{{ m.phone }}</a>
+        </p>
+      </article>
+    </div>
+  </div>
+</section>

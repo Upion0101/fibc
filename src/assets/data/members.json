@@ -1,0 +1,23 @@
+[
+  {
+    "name": "John Doe",
+    "role": "Pastor",
+    "email": "johndoe@example.com",
+    "phone": "+11234567890",
+    "photo": "/assets/images/member1.jpg"
+  },
+  {
+    "name": "Jane Smith",
+    "role": "Associate Pastor",
+    "email": "janesmith@example.com",
+    "phone": "+11234567890",
+    "photo": "/assets/images/member2.jpg"
+  },
+  {
+    "name": "Alex Johnson",
+    "role": "Youth Leader",
+    "email": "alexjohnson@example.com",
+    "phone": "+11234567890",
+    "photo": "/assets/images/member3.jpg"
+  }
+]

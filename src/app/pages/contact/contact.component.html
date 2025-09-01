@@ -1,0 +1,58 @@
+<section class="section">
+  <div class="container">
+    <h1>Contact Us</h1>
+    <p class="muted">We’d love to hear from you. Reach out using the info below.</p>
+
+    <div class="grid two">
+      <!-- Left Column -->
+      <div>
+        <h3>Church Info</h3>
+        <ul class="list">
+          <li>Phone: <a href="tel:+15022910386">(502) 291-0386</a></li>
+          <li>Email: <a href="mailto:p_paler&#64;yahoo.com">p_paler&#64;yahoo.com</a></li>
+        </ul>
+
+        <h3>Addresses</h3>
+        <ul class="list">
+          <li>Mailing: 6511 Bridle View Cir, Louisville, KY 40228</li>
+          <li>Meeting: 5911 E Manslick Rd, Louisville, KY 40219</li>
+        </ul>
+      </div>
+
+      <!-- Right Column: Social -->
+      <div>
+        <h3>Stay Connected</h3>
+        <ul class="list">
+          <li><a href="https://www.instagram.com/fibclouisville/" target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="https://www.facebook.com/profile.php?id=100006663139468" target="_blank" rel="noopener">Facebook</a></li>
+          <li><a href="https://www.kybaptist.org/churches/filipino-international-baptist-church/" target="_blank" rel="noopener">KY Baptist Directory</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Contact Form -->
+    <div class="form-card">
+      <h3>Send Us a Message</h3>
+      <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input id="name" type="text" formControlName="name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" type="email" formControlName="email" required />
+        </div>
+
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" rows="5" formControlName="message" required></textarea>
+        </div>
+
+        <button class="btn btn-primary" type="submit" [disabled]="!contactForm.valid">
+          Send Message
+        </button>
+      </form>
+    </div>
+  </div>
+</section>

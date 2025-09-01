@@ -1,1 +1,115 @@
-/* You can add global styles to this file, and also import other style files */
+/* ===============================
+   Global Theme Styles
+   =============================== */
+
+/* === Color Variables === */
+:root {
+  --primary: #1e3a8a;   /* Indigo-800 */
+  --secondary: #f59e0b; /* Amber-500 */
+  --background: #f8fafc; /* Slate-50 */
+  --text: #0f172a;      /* Slate-900 */
+  --muted: #64748b;     /* Slate-500 */
+
+  --radius: 12px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+/* === Reset / Base === */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', 'Roboto', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text);
+  background-color: #fff;
+}
+
+/* === Headings === */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  font-weight: 700;
+  color: var(--text);
+}
+h1 { font-size: clamp(2rem, 4vw, 3rem); }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+
+/* === Links === */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: 0.2s;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* === Utility Classes === */
+.container {
+  max-width: 1152px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+.center { text-align: center; }
+.muted { color: var(--muted); }
+.w-100 { width: 100%; }
+.hidden { display: none; }
+
+/* === Buttons === */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover {
+  filter: brightness(1.1);
+}
+
+.btn-secondary {
+  background: var(--secondary);
+  color: #111827;
+}
+.btn-secondary:hover {
+  filter: brightness(1.05);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid rgba(30, 58, 138, 0.3);
+}
+.btn-ghost:hover {
+  background: rgba(30, 58, 138, 0.05);
+}
+
+/* === Sections === */
+.section {
+  padding: 4rem 0;
+}
+.section-light {
+  background: var(--background);
+}
