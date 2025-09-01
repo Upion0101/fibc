@@ -1,0 +1,39 @@
+.donate {
+  text-align: center;
+
+  .intro {
+    margin-bottom: 2rem;
+    font-size: 1.2rem;
+    color: var(--muted);
+  }
+
+  .donate-box {
+    background: #fff;
+    padding: 2rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: inline-block;
+    margin-bottom: 2rem;
+
+    h2 {
+      margin-top: 0;
+      color: var(--primary);
+    }
+
+    .btn {
+      margin: 1rem 0;
+    }
+
+    .muted {
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+  }
+
+  .note {
+    max-width: 600px;
+    margin: 0 auto;
+    font-style: italic;
+    color: #444;
+  }
+}

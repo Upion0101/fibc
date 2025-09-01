@@ -1,23 +1,40 @@
 <!-- Hero Section -->
-<section class="hero">
-  <div class="hero-overlay"></div>
-  <div class="container hero-content">
-    <h1>Welcome to Filipino International Baptist Church</h1>
-    <p class="tagline">A Christ-centered family where everyone has a place.</p>
-    <div class="cta">
-      <a class="btn btn-primary" routerLink="/visit">Plan a Visit</a>
-      <a class="btn btn-secondary" routerLink="/about">Learn More</a>
-    </div>
+<section class="hero" [@fadeInHero]></section>
+
+<!-- Scripture Banner -->
+<section class="scripture-banner" [@fadeUp]>
+  <div class="container">
+    <h2>
+      “Therefore go and make disciples of all nations, baptizing them in the name of the Father 
+      and of the Son and of the Holy Spirit, and teaching them to obey everything I have commanded you. 
+      And surely I am with you always, to the very end of the age.”
+    </h2>
+    <p class="reference">— Matthew 28:19–20 (NIV)</p>
   </div>
 </section>
 
 <!-- Welcome Section -->
 <section class="welcome">
   <div class="container">
-    <h2>We’re Glad You’re Here</h2>
-    <p>
-      Whether you’re new to church, exploring faith, or looking for a place to belong — 
-      FIBC is a welcoming community where you can grow in your walk with Christ.
-    </p>
+    <div class="welcome-content">
+      <div class="text">
+        <h3>~~~~Welcome~~~~</h3>
+        <h1>
+          Our mission is to <span class="highlight">praise</span> God,
+          <span class="highlight">proclaim</span> His message and
+          <span class="highlight">prepare </span> His people for service.
+        </h1>
+        <p>
+          Filipino International Baptist Church (FIBC) is a family-oriented church that reaches out to Louisville
+          with the love of Christ. Come and join in what is happening at FIBC.
+         </p>
+          <button routerLink="/about" class="btn btn-primary">
+            Find Out More
+          </button>
+      </div>
+      <div class="image">
+        <img src="assets/images/fibc-group.jpg" alt="FIBC church family group" />
+      </div>
+    </div>
   </div>
 </section>

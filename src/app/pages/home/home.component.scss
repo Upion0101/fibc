@@ -1,59 +1,90 @@
-/* Hero */
+/* Hero Section */
 .hero {
   position: relative;
-  min-height: 70vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #fff;
-  background: url('/assets/images/hero-church.jpg') center/cover no-repeat;
+  height: 90vh;
+  background: url('/assets/images/hero-bg.jpg') top center/cover no-repeat;
 
-  .hero-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-  }
-
-  .hero-content {
-    position: relative;
-    z-index: 1;
-  }
-
-  h1 {
-    font-size: clamp(2rem, 4vw, 3.5rem);
-    margin-bottom: 0.5rem;
-  }
-
-  .tagline {
-    font-size: 1.25rem;
-    opacity: 0.9;
-  }
-
-  .cta {
-    margin-top: 1.5rem;
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
+  @media (min-width: 992px) {
+  position: relative;
+  height: 90vh;
+  background: #0a2e4f url('/assets/images/hero-bg.jpg') center/contain no-repeat;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
   }
 }
 
-/* Welcome */
-.welcome {
-  padding: 4rem 0;
+
+
+
+/* Scripture Banner */
+.scripture-banner {
+  background: var(--secondary);
+  color: #fff;
+  padding: 3rem 1rem;
   text-align: center;
 
   h2 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     margin-bottom: 1rem;
-    color: var(--primary);
   }
 
-  p {
-    max-width: 700px;
-    margin: 0 auto;
-    font-size: 1.125rem;
-    color: var(--text);
+  .reference {
+    font-style: italic;
+    font-size: 1rem;
+  }
+}
+
+/* Welcome Section */
+.welcome {
+  background: #fff;
+  padding: 4rem 1rem;
+
+  .welcome-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+
+  .text {
+    flex: 1;
+    min-width: 300px;
+
+    h3 {
+      font-family: 'Dancing Script', cursive; // 👈 cursive font
+      font-size: 2.2rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+
+      .highlight {
+        color: var(--primary);
+      }
+    }
+
+    p {
+      margin-bottom: 2rem;
+      color: var(--muted);
+    }
+  }
+
+  .image {
+    flex: 1;
+    min-width: 300px;
+    text-align: center;
+
+    img {
+      width: 100%;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
   }
 }

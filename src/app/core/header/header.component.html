@@ -1,7 +1,9 @@
 <header class="site-header">
   <div class="container hdr">
     <!-- Logo / Brand -->
-    <a class="brand" routerLink="/">FIBC</a>
+    <a class="brand" routerLink="/">
+      <img src="assets/images/logo.jpg" alt="FIBC Logo" class="logo" />
+    </a>
 
     <!-- Desktop Nav -->
     <nav class="nav desktop-nav">
@@ -11,6 +13,7 @@
       <a routerLink="/members">Leaders</a>
       <a routerLink="/contact">Contact</a>
       <a class="btn btn-primary" routerLink="/visit">Plan a Visit</a>
+      <a class="btn btn-accent" routerLink="/donate">Donate</a> <!-- 👈 Added Donate -->
     </nav>
 
     <!-- Hamburger (mobile) -->
@@ -29,7 +32,6 @@
     <a routerLink="/members" (click)="closeMenu()">Leaders</a>
     <a routerLink="/contact" (click)="closeMenu()">Contact</a>
     <a class="btn btn-primary" routerLink="/visit" (click)="closeMenu()">Plan a Visit</a>
+    <a class="btn btn-accent" routerLink="/donate" (click)="closeMenu()">Donate</a> <!-- 👈 Added Donate -->
   </nav>
 </header>
-
-  

@@ -5,6 +5,8 @@ import { HistoryComponent } from './pages/history/history.component';
 import { MembersComponent } from './pages/members/members.component';
 import { ContactComponent } from './pages/contact/contact.component';
 import { VisitComponent } from './pages/visit/visit.component';
+import { DonateComponent } from './pages/donate/donate.component';
+import { NotFoundComponent } from './pages/not-found/not-found.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -12,5 +14,7 @@ export const routes: Routes = [
   { path: 'history', component: HistoryComponent },
   { path: 'members', component: MembersComponent },
   { path: 'contact', component: ContactComponent },
-  { path: 'visit', component: VisitComponent }
+  { path: 'visit', component: VisitComponent },
+  { path: 'donate', component: DonateComponent },
+  { path: '**', component: NotFoundComponent }
 ];
