@@ -1,48 +1,108 @@
-.form-card {
-  margin-top: 2.5rem;
-  background: #fff;
-  padding: 2rem;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  max-width: 600px;
-  margin-inline: auto;
+.contact-page {
+  padding: 4rem 1rem;
+  background: #f9fafc; // subtle off-white background
+  text-align: center;
 
-  h3 {
-    margin-top: 0;
-    margin-bottom: 1.25rem;
+  h1 {
+    font-size: 2.5rem;
     color: var(--primary);
-  }
-}
-
-form {
-  display: grid;
-  gap: 1rem;
-}
-
-.form-group {
-  display: grid;
-  gap: 0.5rem;
-
-  label {
-    font-weight: 600;
+    margin-bottom: 0.5rem;
   }
 
-  input, textarea {
-    width: 100%;
-    padding: 0.75rem;
+  .intro {
+    margin-bottom: 3rem;
+    color: var(--muted);
+    font-size: 1.1rem;
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: left;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .info-card,
+  .form-card {
+    background: #fff;
+    padding: 2rem;
     border-radius: var(--radius);
-    border: 1px solid #e2e8f0;
-    font-size: 1rem;
+    box-shadow: var(--shadow);
+
+    h3 {
+      color: var(--secondary);
+      margin-bottom: 1rem;
+    }
+
+    ul.list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 2rem 0;
+
+      li {
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+      }
+
+      a {
+        color: var(--primary);
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
   }
 
-  input:focus, textarea:focus {
-    border-color: var(--primary);
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.2);
-  }
-}
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.25rem;
 
-button[disabled] {
-  opacity: 0.6;
-  cursor: not-allowed;
+    label {
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    input,
+    textarea {
+      padding: 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      transition: border-color 0.2s;
+
+      &:focus {
+        border-color: var(--primary);
+        outline: none;
+      }
+    }
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    cursor: pointer;
+
+    &.btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      transition: background 0.3s;
+
+      &:hover {
+        background: #1f334d; // darker tone of primary
+      }
+    }
+  }
 }

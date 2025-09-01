@@ -4,8 +4,8 @@ import { trigger, style, animate, transition } from '@angular/animations';
 
 @Component({
   selector: 'app-home',
-  standalone: true, // 👈 mark as standalone
-  imports: [RouterModule], // 👈 so routerLink works
+  standalone: true,
+  imports: [RouterModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
   animations: [
