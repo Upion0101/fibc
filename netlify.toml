@@ -1,0 +1,9 @@
+[build]
+  command = "ng build --configuration production"
+  publish = "dist/fibc/browser"
+
+# Redirect all routes to index.html (Angular handles routing client-side)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
