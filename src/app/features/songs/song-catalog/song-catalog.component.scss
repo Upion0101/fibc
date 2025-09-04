@@ -1,0 +1,141 @@
+.song-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.catalog-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .search-bar {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--muted);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    width: 100%;
+  }
+
+  .search-filters {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+
+    input {
+      margin-right: 0.25rem;
+    }
+  }
+}
+
+.alpha-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+
+  span {
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius);
+    transition: background 0.2s;
+
+    &:hover {
+      background: var(--background);
+    }
+  }
+}
+
+.catalog-body {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 2rem;
+}
+
+.song-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.song-row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+
+  &:hover {
+    background: var(--background);
+  }
+
+  .thumb {
+    width: 40px;
+    height: 40px;
+    background: var(--muted);
+    border-radius: 6px;
+  }
+
+  .song-meta {
+    overflow: hidden;
+
+    .song-title {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .song-writers {
+      font-size: 0.85rem;
+    }
+
+    .song-artist {
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+  }
+
+  .song-duration {
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      margin-bottom: 0.5rem;
+
+      a {
+        color: var(--primary);
+        font-size: 0.95rem;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
+.pagination {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+
+  button[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

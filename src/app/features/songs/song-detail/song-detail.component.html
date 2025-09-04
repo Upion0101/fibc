@@ -1,0 +1,39 @@
+<section class="section">
+  <div class="container song-detail">
+    <h1>{{ song?.title }}</h1>
+    <p class="muted" *ngIf="song?.artist">By {{ song.artist }}</p>
+
+    <!-- Authors -->
+    <div class="meta" *ngIf="song?.authors?.length">
+      <h3>Authors</h3>
+      <p>{{ song.authors.join(', ') }}</p>
+    </div>
+
+    <!-- Info -->
+    <div class="meta-grid">
+      <div><strong>Tempo:</strong> {{ song?.tempo || '—' }}</div>
+      <div><strong>Theme:</strong> {{ song?.theme || '—' }}</div>
+      <div><strong>Time Signature:</strong> {{ song?.time_signature || '—' }}</div>
+      <div><strong>Meter:</strong> {{ song?.meter || '—' }}</div>
+      <div><strong>Style:</strong> {{ song?.style || '—' }}</div>
+    </div>
+
+    <!-- Song Map -->
+    <div class="meta" *ngIf="song?.song_map?.length">
+      <h3>Song Map</h3>
+      <p>{{ song.song_map }}</p>
+    </div>
+
+    <!-- Lyrics -->
+    <div class="lyrics" *ngIf="song?.lyrics">
+    <h3>Lyrics</h3>
+    <pre>{{ song.lyrics?.default || 'No lyrics available' }}</pre>
+    </div>
+
+    <!-- Audio Player -->
+    <div class="audio-player" *ngIf="song?.audio_url">
+      <h3>🎧 Listen</h3>
+      <audio controls [src]="song.audio_url"></audio>
+    </div>
+  </div>
+</section>

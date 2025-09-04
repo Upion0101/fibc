@@ -1,22 +1,89 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './pages/home/home.component';
-import { AboutComponent } from './pages/about/about.component';
-import { HistoryComponent } from './pages/history/history.component';
-import { MembersComponent } from './pages/members/members.component';
-import { ContactComponent } from './pages/contact/contact.component';
-import { VisitComponent } from './pages/visit/visit.component';
-import { DonateComponent } from './pages/donate/donate.component';
-import { GalleryComponent } from './pages/gallery/gallery.component'; 
-import { NotFoundComponent } from './pages/not-found/not-found.component';
+import { AuthGuard } from '@auth0/auth0-angular';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: 'about', component: AboutComponent },
-  { path: 'history', component: HistoryComponent },
-  { path: 'members', component: MembersComponent },
-  { path: 'contact', component: ContactComponent },
-  { path: 'visit', component: VisitComponent },
-  { path: 'donate', component: DonateComponent },
-  { path: 'gallery', component: GalleryComponent },
-  { path: '**', component: NotFoundComponent }
+  // 🌐 Public pages
+  {
+    path: '',
+    loadComponent: () =>
+      import('./pages/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'about',
+    loadComponent: () =>
+      import('./pages/about/about.component').then(m => m.AboutComponent)
+  },
+  {
+    path: 'history',
+    loadComponent: () =>
+      import('./pages/history/history.component').then(m => m.HistoryComponent)
+  },
+  {
+    path: 'contact',
+    loadComponent: () =>
+      import('./pages/contact/contact.component').then(m => m.ContactComponent)
+  },
+  {
+    path: 'visit',
+    loadComponent: () =>
+      import('./pages/visit/visit.component').then(m => m.VisitComponent)
+  },
+  {
+    path: 'donate',
+    loadComponent: () =>
+      import('./pages/donate/donate.component').then(m => m.DonateComponent)
+  },
+  {
+    path: 'gallery',
+    loadComponent: () =>
+      import('./pages/gallery/gallery.component').then(m => m.GalleryComponent)
+  },
+
+  // 🔐 Authentication
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./features/auth/login/login.component').then(m => m.LoginComponent)
+  },
+
+  // 🔒 Protected pages
+  {
+    path: 'members',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./pages/members/members.component').then(m => m.MembersComponent)
+  },
+  {
+    path: 'dashboard',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent)
+  },
+
+  // 🎵 Songs (protected)
+  {
+    path: 'songs/:id', // put dynamic first
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./features/songs/song-detail/song-detail.component').then(
+        m => m.SongDetailComponent
+      )
+  },
+  {
+    path: 'songs',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./features/songs/song-catalog/song-catalog.component').then(
+        m => m.SongCatalogComponent
+      )
+  },
+
+  // ❌ Catch-all (404)
+  {
+    path: '**',
+    loadComponent: () =>
+      import('./pages/not-found/not-found.component').then(
+        m => m.NotFoundComponent
+      )
+  }
 ];

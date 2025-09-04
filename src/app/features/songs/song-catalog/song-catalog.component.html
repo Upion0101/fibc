@@ -1,0 +1,88 @@
+<section class="section section-light">
+  <div class="container song-catalog">
+
+    <!-- Top Search -->
+    <div class="catalog-header">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearch()"
+        placeholder="Search Songs..."
+        class="search-bar"
+      />
+      <div class="search-filters muted">
+        <label>
+          <input type="checkbox" [(ngModel)]="searchByTitle" (change)="onSearch()" />
+          Title
+        </label>
+        <label>
+          <input type="checkbox" [(ngModel)]="searchByAuthor" (change)="onSearch()" />
+          Author
+        </label>
+        <label>
+          <input type="checkbox" [(ngModel)]="searchByTheme" (change)="onSearch()" />
+          Theme
+        </label>
+        <label>
+          <input type="checkbox" [(ngModel)]="searchByLyrics" (change)="onSearch()" />
+          Lyrics
+        </label>
+      </div>
+    </div>
+
+    <!-- Alphabet Bar -->
+    <div class="alpha-bar muted">
+      <span *ngFor="let letter of alphabet" (click)="filterByLetter(letter)">
+        {{ letter }}
+      </span>
+    </div>
+
+    <div class="catalog-body">
+      <!-- Song List -->
+      <div class="song-list">
+        <div class="song-row" *ngFor="let song of songs">
+          <div class="thumb"></div>
+          <div class="song-meta">
+            <a [routerLink]="['/songs', song.id]" class="song-title">
+              {{ song.title }}
+            </a>
+            <p class="song-writers muted">
+              ({{ song.writers || 'Unknown Writers' }})
+            </p>
+            <p class="song-artist">
+              {{ song.artist || 'Unknown Artist' }}
+              <span class="muted"> - {{ song.album || 'Unknown Album' }}</span>
+            </p>
+          </div>
+          <div class="song-duration muted">
+            {{ song.duration || '--:--' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <button class="btn btn-primary w-100">+ New Song</button>
+        <ul class="nav-links">
+          <li><a href="#">Alpha</a></li>
+          <li><a href="#">Popular</a></li>
+          <li><a href="#">New</a></li>
+          <li><a href="#">Recently Viewed</a></li>
+          <li><a href="#">Group Songs</a></li>
+          <li><a href="#">My Songs</a></li>
+        </ul>
+      </aside>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination center" *ngIf="totalPages > 1">
+      <button class="btn btn-ghost" (click)="prevPage()" [disabled]="currentPage === 1">
+        ← Prev
+      </button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button class="btn btn-ghost" (click)="nextPage()" [disabled]="currentPage === totalPages">
+        Next →
+      </button>
+    </div>
+  </div>
+</section>

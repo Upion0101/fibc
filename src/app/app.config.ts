@@ -1,12 +1,23 @@
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations'; // 👈 add this
+import { provideAuth0 } from '@auth0/auth0-angular';
 
 import { routes } from './app.routes';
-import { provideClientHydration } from '@angular/platform-browser';
-import { provideAnimations } from '@angular/platform-browser/animations';
+import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideRouter(routes), provideClientHydration(),
-    provideAnimations()
+  providers: [
+    provideRouter(routes),
+    provideHttpClient(),
+    provideAnimations(), // 👈 enable animations
+    provideAuth0({
+      domain: environment.auth0.domain,
+      clientId: environment.auth0.clientId,
+      authorizationParams: {
+        redirect_uri: environment.auth0.authorizationParams.redirect_uri
+      }
+    })
   ]
 };

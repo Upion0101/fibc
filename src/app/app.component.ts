@@ -10,4 +10,4 @@ import { FooterComponent } from './core/footer/footer.component';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {}
+export class AppComponent {}   // ✅ must be exported
