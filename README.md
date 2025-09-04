@@ -1,27 +1,64 @@
-# Fibc
+# FIBC Louisville Website
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.0.7.
+This is the official website for **Filipino International Baptist Church (FIBC) Louisville**, built with **Angular 17**, deployed via **Netlify**, and connected to a custom domain at [fibclouisville.org](http://fibclouisville.org/).
 
-## Development server
+The site is designed to be modern, responsive, and community-focused, with pages for worship, history, leadership, contact, and more.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+---
 
-## Code scaffolding
+## 🚀 Project Overview
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+- **Framework**: Angular 17 (standalone components, SCSS)
+- **Hosting**: Netlify (auto-deploys from GitHub main branch)
+- **Domain**: fibclouisville.org
+- **Auth**: Auth0 (for account login/management – WIP)
+- **Forms**: Netlify Forms (for Contact page submissions)
+- **Deployment**: CI/CD from GitHub → Netlify
 
-## Build
+---
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## 📂 Current Pages & Features
 
-## Running unit tests
+### Core Layout
+- **Header**: Sticky navigation bar with responsive hamburger menu for mobile.
+  - Links to Home, About, History, Leaders, Contact, Visit, Donate.
+  - Includes **Donate** button (accent style).
+  - Displays church **logo** as part of the brand.
+- **Footer**: Church info, addresses, phone, email, and links to Facebook / Instagram / KY Baptist directory.
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+### Pages
+- **Home**
+  - Hero image with welcoming message + call-to-action.
+  - Mission statement block (“Worship, Share, Equip”).
+  - Welcome section with church intro + “Discover Our Story” button (routerLink to About).
+  - Animations: fade-in / fade-up on scroll for liveliness.
+- **About**
+  - Church background & embedded YouTube documentary.
+- **History**
+  - Church historical milestones.
+- **Leaders (Members)**
+  - Dynamic grid layout, auto-formats for any number of leaders.
+  - Data loaded from `assets/data/members.json`.
+- **Contact**
+  - Card-based layout:
+    - Church info & addresses.
+    - Social links.
+    - **Contact form** (Netlify Forms, spam-protected, submissions visible in Netlify dashboard).
+- **Visit**
+  - Service meeting address.
+  - Embedded Google Maps location.
+- **Donate**
+  - Donation instructions & Zelle QR link.
+- **Not Found (404)**
+  - Custom page with friendly message + button to return Home.
+- **Gallery** (in progress)
+  - Planned: auto-pull latest photos from Facebook page.
+  - Current: placeholder setup with grid layout.
 
-## Running end-to-end tests
+---
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+## 🛠 Development
 
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+### Install dependencies
+```sh
+npm install
