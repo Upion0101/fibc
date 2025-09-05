@@ -1,89 +1,91 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { supabase } from '../../../../../supabaseClient';
 
 @Component({
-  selector: 'app-event-detail',
+  selector: 'app-calendar-detail',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './calendar-detail.component.html',
   styleUrls: ['./calendar-detail.component.scss']
 })
-export class EventDetailComponent implements OnInit {
-  event: any = null;
-  setlists: any[] = [];
-  members: any[] = [];
-  assignments: any[] = [];
+export class CalendarDetailComponent implements OnInit {
+  event: any = { event_date: '', type: '', notes: '', setlist_id: null };
+  isNew = true;
+
+  setlists: Array<{ id: string; name: string }> = [];
   loading = true;
 
-  selectedSetlistId: string | null = null;
-  selectedMemberId: string | null = null;
-  selectedRole: string = '';
-
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute, private router: Router) {}
 
   async ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
-    if (!id) return;
 
-    // load event
-    const { data: ev, error: evErr } = await supabase
-      .from('events')
-      .select('*')
-      .eq('id', id)
-      .single();
+    // 🔹 Load setlists
+    const { data: setlistData, error: setlistErr } = await supabase
+      .from('setlists')
+      .select('id, name')
+      .order('created_at', { ascending: false });
 
-    if (evErr) console.error(evErr);
-    this.event = ev;
+    if (setlistErr) {
+      console.error('❌ Error loading setlists:', setlistErr);
+      this.setlists = [];
+    } else {
+      this.setlists = setlistData || [];
+    }
 
-    // load setlists
-    const { data: sets } = await supabase.from('setlists').select('id, name');
-    this.setlists = sets || [];
+    // 🔹 Load event if editing
+    if (id && id !== 'new') {
+      this.isNew = false;
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-    // load members
-    const { data: mems } = await supabase.from('members').select('id, name');
-    this.members = mems || [];
-
-    // load assignments
-    const { data: assigns } = await supabase
-      .from('assignments')
-      .select('id, role, member_id, members(name)')
-      .eq('event_id', id);
-    this.assignments = assigns || [];
-
-    this.selectedSetlistId = this.event?.setlist_id || null;
+      if (error) {
+        console.error('❌ Error loading event:', error);
+      } else if (data) {
+        this.event = data;
+      }
+    }
 
     this.loading = false;
   }
 
-  async updateSetlist() {
-    if (!this.event?.id) return;
-    const { error } = await supabase
+  async saveEvent() {
+  const payload = {
+    event_date: this.event.event_date
+      ? new Date(this.event.event_date).toISOString().slice(0, 10) // store as `date`
+      : null,
+    type: this.event.type || 'service',
+    notes: this.event.notes || '',
+    setlist_id: this.event.setlist_id || null,
+    name: this.event.name || '' // required column
+  };
+
+  console.log('🟢 Saving event payload:', payload);
+
+  let error;
+  if (this.isNew) {
+    ({ error } = await supabase.from('events').insert([payload]));
+  } else {
+    ({ error } = await supabase
       .from('events')
-      .update({ setlist_id: this.selectedSetlistId })
-      .eq('id', this.event.id);
-    if (error) console.error('❌ Error updating setlist', error);
-    else console.log('✅ Setlist updated');
+      .update(payload)
+      .eq('id', this.event.id));
   }
 
-  async addAssignment() {
-    if (!this.selectedMemberId || !this.selectedRole) return;
-
-    const { error } = await supabase.from('assignments').insert({
-      event_id: this.event.id,
-      member_id: this.selectedMemberId,
-      role: this.selectedRole
-    });
-
-    if (error) console.error(error);
-    else this.ngOnInit(); // refresh
+  if (error) {
+    console.error('❌ Error saving event:', error);
+  } else {
+    this.router.navigate(['/calendar']);
   }
+}
 
-  async removeAssignment(id: string) {
-    const { error } = await supabase.from('assignments').delete().eq('id', id);
-    if (error) console.error(error);
-    else this.assignments = this.assignments.filter(a => a.id !== id);
+  goBack() {
+    this.router.navigate(['/calendar']);
   }
 }

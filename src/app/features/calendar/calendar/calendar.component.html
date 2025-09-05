@@ -2,7 +2,7 @@
   <div class="container calendar">
     <h1>📅 Calendar</h1>
 
-    <button class="btn btn-primary">+ New Event</button>
+    <button class="btn btn-primary" (click)="createEvent()">+ New Event</button>
 
     <div *ngIf="loading">Loading events…</div>
     <div *ngIf="!loading && !events.length" class="muted">No events found</div>

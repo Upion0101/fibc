@@ -96,23 +96,23 @@ export const routes: Routes = [
       )
   },
 
-  // 📅 Calendar (services/rehearsals/assignments)
-  {
-    path: 'calendar',
-    canActivate: [AuthGuard],
-    loadComponent: () =>
-      import('./features/calendar/calendar//calendar.component').then(
-        m => m.CalendarComponent
-      )
-  },
-  {
-    path: 'calendar/:id',
-    canActivate: [AuthGuard],
-    loadComponent: () =>
-      import('./features/calendar/calendar-detail/calendar-detail.component').then(
-        m => m.EventDetailComponent
-      )
-  },
+// 📅 Calendar
+{
+  path: 'calendar',
+  canActivate: [AuthGuard],
+  loadComponent: () =>
+    import('./features/calendar/calendar/calendar.component').then(
+      m => m.CalendarComponent
+    )
+},
+{
+  path: 'calendar/:id',
+  canActivate: [AuthGuard],
+  loadComponent: () =>
+    import('./features/calendar/calendar-detail/calendar-detail.component').then(
+      m => m.CalendarDetailComponent
+    )
+},
 
   // ❌ Catch-all (404)
   {

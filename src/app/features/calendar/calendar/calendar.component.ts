@@ -33,6 +33,10 @@ export class CalendarComponent implements OnInit {
   }
 
   openEvent(eventId: string) {
-    this.router.navigate(['/events', eventId]);
+    this.router.navigate(['/calendar', eventId]);
+  }
+
+  createEvent() {
+    this.router.navigate(['/calendar/new']);
   }
 }
