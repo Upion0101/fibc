@@ -1,0 +1,35 @@
+<section class="section section-light">
+  <div class="container setlist-catalog">
+    <h1>📋 Setlists</h1>
+
+    <!-- Create new setlist -->
+    <div class="new-setlist">
+      <input
+        type="text"
+        [(ngModel)]="newSetlistName"
+        placeholder="New setlist name"
+        class="input"
+      />
+      <button class="btn btn-primary"
+              (click)="createSetlist()"
+              [disabled]="creating || !newSetlistName.trim()">
+        {{ creating ? 'Creating…' : '➕ Create Setlist' }}
+      </button>
+    </div>
+
+    <p class="muted" *ngIf="errorMsg">{{ errorMsg }}</p>
+
+    <!-- List of setlists -->
+    <div *ngIf="loading">Loading…</div>
+    <div *ngIf="!loading && setlists.length === 0">
+      <p class="muted">No setlists yet.</p>
+    </div>
+
+    <div class="setlist-grid" *ngIf="setlists.length > 0">
+      <div class="setlist-card" *ngFor="let s of setlists">
+        <h3><a [routerLink]="['/setlists', s.id]">{{ s.name }}</a></h3>
+        <p class="muted">Created: {{ s.created_at | date:'mediumDate' }}</p>
+      </div>
+    </div>
+  </div>
+</section>

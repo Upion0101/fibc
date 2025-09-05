@@ -1,0 +1,18 @@
+<section class="section">
+  <div class="container calendar">
+    <h1>📅 Calendar</h1>
+
+    <button class="btn btn-primary">+ New Event</button>
+
+    <div *ngIf="loading">Loading events…</div>
+    <div *ngIf="!loading && !events.length" class="muted">No events found</div>
+
+    <ul class="event-list" *ngIf="!loading && events.length">
+      <li *ngFor="let e of events" (click)="openEvent(e.id)" class="event-row">
+        <div class="event-date">{{ e.event_date | date:'fullDate' }}</div>
+        <div class="event-type">{{ e.type | titlecase }}</div>
+        <div class="event-notes">{{ e.notes || '—' }}</div>
+      </li>
+    </ul>
+  </div>
+</section>

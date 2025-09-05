@@ -1,0 +1,93 @@
+.setlist-detail {
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+
+    h1 {
+      flex: 1;
+      text-align: center;
+      color: var(--primary);
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+  }
+
+  .edit-box {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .song-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .song-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 0.75rem;
+
+    .song-info {
+      flex: 1;
+      min-width: 0;
+      font-size: 0.95rem;
+
+      strong {
+        color: var(--primary);
+      }
+
+      .muted {
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+    }
+
+    .song-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: flex-end;
+
+      button {
+        white-space: nowrap;
+      }
+    }
+  }
+
+  /* 📱 Mobile */
+  @media (max-width: 600px) {
+    .song-row {
+      flex-direction: column;
+      align-items: flex-start;
+
+      .song-actions {
+        width: 100%;
+        justify-content: flex-start;
+        margin-top: 0.5rem;
+      }
+    }
+  }
+
+  .success {
+    color: #0a7a28;
+    margin-top: 0.5rem;
+  }
+
+  .error {
+    color: #b91c1c;
+    margin-top: 0.5rem;
+  }
+}

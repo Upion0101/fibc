@@ -1,0 +1,56 @@
+<section class="section section-light">
+  <div class="container">
+    <ng-container *ngIf="loading">Loading…</ng-container>
+    <ng-container *ngIf="!loading && errorMsg"><p class="error">{{ errorMsg }}</p></ng-container>
+
+    <ng-container *ngIf="!loading && setlist">
+      <div class="header-row">
+        <button class="btn btn-ghost" (click)="goBack()">← Back</button>
+
+        <div class="title-actions">
+          <ng-container *ngIf="!editingName; else editMode">
+            <h1>{{ setlist.name }}</h1>
+            <button class="btn btn-ghost btn-small" (click)="editingName = true">✏️ Edit Setlist Name</button>
+          </ng-container>
+          <ng-template #editMode>
+            <input [(ngModel)]="newName" class="input" />
+            <button class="btn btn-primary btn-small" (click)="saveName()">Save</button>
+          </ng-template>
+        </div>
+
+        <div class="header-buttons">
+          <button class="btn btn-primary" (click)="goToSongCatalog()">➕ Add Songs</button>
+          <button class="btn btn-danger" (click)="deleteSetlist()">🗑 Delete</button>
+        </div>
+      </div>
+
+      <p class="muted">Total: {{ songs.length }} songs</p>
+
+      <div *ngIf="songs.length > 0; else noSongs">
+        <ul class="song-list">
+            <li *ngFor="let song of songs" class="song-row">
+            <div class="song-info">
+                <strong>#{{ song.position }}</strong> — {{ song.title }}
+                <span class="muted">({{ song.artist || 'Unknown Artist' }})</span>
+            </div>
+            <div class="song-actions">
+                <button class="btn btn-ghost btn-small" (click)="moveSong(song.setlistSongId, 'up')">⬆</button>
+                <button class="btn btn-ghost btn-small" (click)="moveSong(song.setlistSongId, 'down')">⬇</button>
+                <button class="btn btn-ghost btn-small"
+                (click)="removeSong(song.setlistSongId)"
+                [disabled]="actionLoading === song.setlistSongId">
+                {{ actionLoading === song.setlistSongId ? 'Removing…' : 'Remove' }}
+                </button>
+            </div>
+            </li>
+        </ul>
+      </div>
+
+      <ng-template #noSongs>
+        <p class="muted">No songs in this setlist yet.</p>
+      </ng-template>
+
+      <p class="success" *ngIf="successMsg">{{ successMsg }}</p>
+    </ng-container>
+  </div>
+</section>

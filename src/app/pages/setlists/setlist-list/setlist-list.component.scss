@@ -1,0 +1,47 @@
+.setlist-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  .new-setlist {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+
+    .input {
+      flex: 1;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid rgba(0,0,0,0.15);
+      border-radius: var(--radius);
+      font-size: 1rem;
+    }
+  }
+
+  .setlist-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+
+  .setlist-card {
+    padding: 1rem;
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    transition: 0.2s;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+
+    h3 {
+      margin: 0 0 0.5rem 0;
+      color: var(--primary);
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+  }
+}

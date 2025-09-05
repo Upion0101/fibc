@@ -1,0 +1,40 @@
+<section class="section">
+  <div class="container event-detail">
+    <button routerLink="/calendar" class="btn btn-ghost">← Back</button>
+
+    <h1>Event on {{ event?.event_date | date:'fullDate' }}</h1>
+    <p class="muted">{{ event?.type | titlecase }}</p>
+    <p *ngIf="event?.notes">{{ event.notes }}</p>
+
+    <!-- Setlist -->
+    <div class="block">
+      <label class="field-label">Linked Setlist</label>
+      <select [(ngModel)]="selectedSetlistId" class="select">
+        <option [ngValue]="null">None</option>
+        <option *ngFor="let s of setlists" [ngValue]="s.id">{{ s.name }}</option>
+      </select>
+      <button class="btn btn-primary" (click)="updateSetlist()">Save</button>
+    </div>
+
+    <!-- Assignments -->
+    <div class="block">
+      <h3>Assignments</h3>
+
+      <ul class="assignment-list">
+        <li *ngFor="let a of assignments">
+          {{ a.members?.name }} — {{ a.role }}
+          <button class="btn btn-small btn-ghost" (click)="removeAssignment(a.id)">Remove</button>
+        </li>
+      </ul>
+
+      <div class="assign-form">
+        <select [(ngModel)]="selectedMemberId" class="select">
+          <option [ngValue]="null" disabled>Select member…</option>
+          <option *ngFor="let m of members" [ngValue]="m.id">{{ m.name }}</option>
+        </select>
+        <input [(ngModel)]="selectedRole" placeholder="Role (e.g. vocals)" class="input" />
+        <button class="btn btn-primary" (click)="addAssignment()">+ Assign</button>
+      </div>
+    </div>
+  </div>
+</section>
