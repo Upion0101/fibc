@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { AuthService } from '@auth0/auth0-angular';
 import { HeaderComponent } from './core/header/header.component';
 import { FooterComponent } from './core/footer/footer.component';
+import { supabase } from '../../supabaseClient';
 
 @Component({
   selector: 'app-root',
@@ -13,19 +13,21 @@ import { FooterComponent } from './core/footer/footer.component';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  constructor(public auth: AuthService) {}
+  user: any = null;
 
-  ngOnInit() {
-    this.auth.isAuthenticated$.subscribe(isAuth => {
-      if (isAuth) {
-        this.auth.getAccessTokenSilently().subscribe(token => {
-          if (token) {
-            localStorage.setItem('auth0_access_token', token);
-            console.log('✅ Auth0 token saved for Supabase:', token.substring(0, 20) + '...');
-          }
-        });
+  async ngOnInit() {
+    // Get the current session on load
+    const { data } = await supabase.auth.getSession();
+    this.user = data.session?.user || null;
+
+    // Subscribe to auth state changes
+    supabase.auth.onAuthStateChange((_event, session) => {
+      this.user = session?.user || null;
+
+      if (this.user) {
+        console.log('✅ Supabase user logged in:', this.user.email);
       } else {
-        localStorage.removeItem('auth0_access_token');
+        console.log('❌ Supabase user logged out');
       }
     });
   }

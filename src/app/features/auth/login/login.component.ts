@@ -1,36 +1,51 @@
 import { Component } from '@angular/core';
+import { AuthService } from '../services/auth.service';
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '@auth0/auth0-angular';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
-  constructor(public auth: AuthService) {
-    // Save Auth0 token to localStorage for Supabase
-    this.auth.idTokenClaims$.subscribe(claims => {
-      if (claims && claims.__raw) {
-        localStorage.setItem('auth0_access_token', claims.__raw);
-      }
-    });
+  email = '';
+  password = '';
+  message = '';
+
+  constructor(private auth: AuthService) {}
+
+  async login() {
+    try {
+      await this.auth.signInWithEmail(this.email, this.password);
+      this.message = 'Logged in!';
+    } catch (err: any) {
+      this.message = err.message;
+    }
   }
 
-  login() {
-    this.auth.loginWithRedirect({
-      appState: { target: '/dashboard' } // 👈 redirect after login
-    });
+  async signup() {
+    try {
+      await this.auth.signUpWithEmail(this.email, this.password);
+      this.message = 'Check your email to confirm.';
+    } catch (err: any) {
+      this.message = err.message;
+    }
   }
 
-  logout() {
-    localStorage.removeItem('auth0_access_token'); // cleanup
-    this.auth.logout({
-      logoutParams: {
-        returnTo: window.location.origin
-      }
-    });
+  async loginGoogle() {
+    try {
+      await this.auth.signInWithGoogle();
+      // Supabase will handle redirect
+    } catch (err: any) {
+      this.message = err.message;
+    }
+  }
+
+  async logout() {
+    await this.auth.signOut();
+    this.message = 'Logged out';
   }
 }

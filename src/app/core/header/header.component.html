@@ -7,7 +7,7 @@
 
     <!-- Desktop Nav -->
     <nav class="nav desktop-nav" aria-label="Main navigation">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
       <a routerLink="/about" routerLinkActive="active">About</a>
       <a routerLink="/history" routerLinkActive="active">History</a>
       <a routerLink="/members" routerLinkActive="active">Members</a> <!-- ✅ always visible -->
@@ -17,19 +17,19 @@
       <a class="btn btn-accent" routerLink="/donate" routerLinkActive="active">Donate</a>
 
       <!-- 🔐 Dashboard (only if logged in) -->
-      <ng-container *ngIf="auth.isAuthenticated$ | async">
+      <ng-container *ngIf="user">
         <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
       </ng-container>
 
       <!-- 🔐 Auth Section -->
-      <ng-container *ngIf="auth.isAuthenticated$ | async; else loggedOut">
-        <div class="user-info" *ngIf="auth.user$ | async as user">
-          <span class="user-name">{{ user.name || user.email }}</span>
+      <ng-container *ngIf="user; else loggedOut">
+        <div class="user-info">
+          <span class="user-name">{{ user.email }}</span>
           <button class="btn btn-small" (click)="logout()">Logout</button>
         </div>
       </ng-container>
       <ng-template #loggedOut>
-        <button class="btn btn-small" (click)="auth.loginWithRedirect()">Login</button>
+        <button class="btn btn-small" routerLink="/login">Login</button>
       </ng-template>
     </nav>
 
@@ -43,7 +43,7 @@
 
   <!-- Mobile Nav -->
   <nav class="mobile-nav" *ngIf="mobileMenuOpen" aria-label="Mobile navigation">
-    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Home</a>
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">Home</a>
     <a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">About</a>
     <a routerLink="/history" routerLinkActive="active" (click)="closeMenu()">History</a>
     <a routerLink="/members" routerLinkActive="active" (click)="closeMenu()">Members</a> <!-- ✅ always visible -->
@@ -53,19 +53,19 @@
     <a class="btn btn-accent" routerLink="/donate" routerLinkActive="active" (click)="closeMenu()">Donate</a>
 
     <!-- 🔐 Dashboard (only if logged in) -->
-    <ng-container *ngIf="auth.isAuthenticated$ | async">
+    <ng-container *ngIf="user">
       <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">Dashboard</a>
     </ng-container>
 
     <!-- 🔐 Auth Section (Mobile) -->
-    <ng-container *ngIf="auth.isAuthenticated$ | async; else mobileLoggedOut">
-      <div class="user-info" *ngIf="auth.user$ | async as user">
-        <span class="user-name">{{ user.name || user.email }}</span>
+    <ng-container *ngIf="user; else mobileLoggedOut">
+      <div class="user-info">
+        <span class="user-name">{{ user.email }}</span>
         <button class="btn btn-small" (click)="logout(); closeMenu()">Logout</button>
       </div>
     </ng-container>
     <ng-template #mobileLoggedOut>
-      <button class="btn btn-small" (click)="auth.loginWithRedirect(); closeMenu()">Login</button>
+      <button class="btn btn-small" routerLink="/login" (click)="closeMenu()">Login</button>
     </ng-template>
   </nav>
 </header>

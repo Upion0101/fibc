@@ -1,12 +1,39 @@
 <div class="auth-container">
-  <h2>Member Login</h2>
+  <h2 class="auth-title">Login</h2>
 
-  <ng-container *ngIf="auth.isAuthenticated$ | async; else loggedOut">
-    <p>Welcome, {{ (auth.user$ | async)?.email }}</p>
-    <button (click)="logout()">Log Out</button>
-  </ng-container>
+  <form class="auth-form" (ngSubmit)="login()">
+    <input
+      type="email"
+      [(ngModel)]="email"
+      name="email"
+      placeholder="Email"
+      required
+    />
+    <input
+      type="password"
+      [(ngModel)]="password"
+      name="password"
+      placeholder="Password"
+      required
+    />
 
-  <ng-template #loggedOut>
-    <button (click)="auth.loginWithRedirect()">Log In / Sign Up</button>
-  </ng-template>
+    <div class="auth-actions">
+      <button type="submit" class="btn btn-primary">Login</button>
+      <button type="button" class="btn btn-secondary" (click)="signup()">Sign Up</button>
+    </div>
+  </form>
+
+  <div class="social-login">
+    <p class="divider">or</p>
+    <button type="button" class="btn btn-google" (click)="loginGoogle()">
+      <img src="/assets/images/google-icon.svg" alt="Google" />
+      Sign in with Google
+    </button>
+  </div>
+
+  <div class="auth-logout" *ngIf="message.includes('Logged in')">
+    <button class="btn btn-small" (click)="logout()">Logout</button>
+  </div>
+
+  <p class="auth-message">{{ message }}</p>
 </div>
