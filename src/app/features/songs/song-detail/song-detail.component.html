@@ -1,7 +1,16 @@
 <section class="section">
   <div class="container song-detail">
-    <h1>{{ song?.title }}</h1>
-    <p class="muted" *ngIf="song?.artist">By {{ song.artist }}</p>
+
+    <!-- Header + action -->
+    <div class="header-row">
+      <div>
+        <h1>{{ song?.title }}</h1>
+        <p class="muted" *ngIf="song?.artist">By {{ song.artist }}</p>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" (click)="openAddToSetlist()">➕ Add to Setlist</button>
+      </div>
+    </div>
 
     <!-- Authors -->
     <div class="meta" *ngIf="song?.authors?.length">
@@ -26,14 +35,56 @@
 
     <!-- Lyrics -->
     <div class="lyrics" *ngIf="song?.lyrics">
-    <h3>Lyrics</h3>
-    <pre>{{ song.lyrics?.default || 'No lyrics available' }}</pre>
+      <h3>Lyrics</h3>
+      <pre>{{ song.lyrics?.default || 'No lyrics available' }}</pre>
     </div>
 
     <!-- Audio Player -->
     <div class="audio-player" *ngIf="song?.audio_url">
       <h3>🎧 Listen</h3>
       <audio controls [src]="song.audio_url"></audio>
+    </div>
+  </div>
+
+  <!-- Add to Setlist Modal -->
+  <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Add “{{ song?.title }}” to a setlist</h3>
+
+      <div class="mode-toggle">
+        <button class="mode-btn" [class.active]="!creatingNew" (click)="creatingNew = false">Choose Existing</button>
+        <button class="mode-btn" [class.active]="creatingNew" (click)="creatingNew = true">Create New</button>
+      </div>
+
+      <!-- Existing Setlist -->
+      <div *ngIf="!creatingNew">
+        <label class="field-label">Select a setlist</label>
+        <select class="select" [(ngModel)]="selectedSetlistId">
+          <option [ngValue]="null" disabled>Select…</option>
+          <option *ngFor="let s of setlists" [ngValue]="s.id">{{ s.name }}</option>
+        </select>
+        <button class="btn btn-primary w-100"
+                [disabled]="!selectedSetlistId || actionLoading"
+                (click)="addToExisting()">
+          {{ actionLoading ? 'Adding…' : 'Add to Setlist' }}
+        </button>
+      </div>
+
+      <!-- New Setlist (no date asked) -->
+      <div *ngIf="creatingNew">
+        <label class="field-label">New setlist name</label>
+        <input class="input" type="text" [(ngModel)]="newSetlistName" placeholder="e.g., March 9 Sunday AM" />
+        <button class="btn btn-primary w-100"
+                [disabled]="!newSetlistName?.trim() || actionLoading"
+                (click)="createSetlistAndAdd()">
+          {{ actionLoading ? 'Creating…' : 'Create & Add' }}
+        </button>
+      </div>
+
+      <button class="btn btn-ghost w-100" (click)="closeModal()">Cancel</button>
+
+      <p class="muted small" *ngIf="errorMsg">{{ errorMsg }}</p>
+      <p class="success small" *ngIf="successMsg">{{ successMsg }}</p>
     </div>
   </div>
 </section>

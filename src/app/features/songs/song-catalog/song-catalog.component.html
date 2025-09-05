@@ -54,8 +54,9 @@
               <span class="muted"> - {{ song.album || 'Unknown Album' }}</span>
             </p>
           </div>
-          <div class="song-duration muted">
-            {{ song.duration || '--:--' }}
+          <div class="song-actions">
+            <span class="song-duration muted">{{ song.duration || '--:--' }}</span>
+            <button class="btn btn-ghost btn-small" (click)="openAddToSetlist(song)">➕ Add To Setlist</button>
           </div>
         </div>
       </div>
@@ -83,6 +84,52 @@
       <button class="btn btn-ghost" (click)="nextPage()" [disabled]="currentPage === totalPages">
         Next →
       </button>
+    </div>
+  </div>
+
+  <!-- Add to Setlist Modal -->
+  <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Add “{{ selectedSong?.title }}” to a setlist</h3>
+
+      <div class="mode-toggle">
+        <button
+          class="mode-btn"
+          [class.active]="!creatingNew"
+          (click)="creatingNew = false"
+        >Choose Existing</button>
+        <button
+          class="mode-btn"
+          [class.active]="creatingNew"
+          (click)="creatingNew = true"
+        >Create New</button>
+      </div>
+
+      <!-- Existing Setlist -->
+      <div *ngIf="!creatingNew">
+        <label class="field-label">Select a setlist</label>
+        <select class="select" [(ngModel)]="selectedSetlistId">
+          <option [ngValue]="null" disabled>Select…</option>
+          <option *ngFor="let s of setlists" [ngValue]="s.id">{{ s.name }}</option>
+        </select>
+        <button class="btn btn-primary w-100" [disabled]="!selectedSetlistId || actionLoading" (click)="addToExisting()">
+          {{ actionLoading ? 'Adding…' : 'Add to Setlist' }}
+        </button>
+      </div>
+
+      <!-- New Setlist -->
+      <div *ngIf="creatingNew">
+        <label class="field-label">New setlist name</label>
+        <input class="input" type="text" [(ngModel)]="newSetlistName" placeholder="e.g., March 9 Sunday AM" />
+        <button class="btn btn-primary w-100" [disabled]="!newSetlistName?.trim() || actionLoading" (click)="createSetlistAndAdd()">
+          {{ actionLoading ? 'Creating…' : 'Create & Add' }}
+        </button>
+      </div>
+
+      <button class="btn btn-ghost w-100" (click)="closeModal()">Cancel</button>
+
+      <p class="muted small" *ngIf="errorMsg">{{ errorMsg }}</p>
+      <p class="success small" *ngIf="successMsg">{{ successMsg }}</p>
     </div>
   </div>
 </section>

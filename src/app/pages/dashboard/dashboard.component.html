@@ -1,7 +1,29 @@
-<h2>Worship Team Dashboard</h2>
-<ul>
-  <li><a routerLink="/songs">🎶 Songs</a></li>
-  <li><a routerLink="/setlists">📋 Setlists</a></li>
-  <li><a routerLink="/events">📅 Events</a></li>
-  <li><a routerLink="/assignments">👤 Assignments</a></li>
-</ul>
+<div class="dashboard">
+  <div class="card">
+    <div class="icon">🎶</div>
+    <h3>Songs</h3>
+    <p>Manage library of all worship songs.</p>
+    <a routerLink="/songs" class="btn btn-primary">Open</a>
+  </div>
+
+  <div class="card">
+    <div class="icon">📋</div>
+    <h3>Setlists</h3>
+    <p>Create and organize collections of songs.</p>
+    <a routerLink="/setlists" class="btn btn-primary">Open</a>
+  </div>
+
+  <div class="card">
+    <div class="icon">🙏</div>
+    <h3>Services</h3>
+    <p>Assign setlist + members for each service date.</p>
+    <a routerLink="/services" class="btn btn-primary">Open</a>
+  </div>
+
+  <div class="card">
+    <div class="icon">👥</div>
+    <h3>Members</h3>
+    <p>View and manage worship team roster.</p>
+    <a routerLink="/members" class="btn btn-primary">Open</a>
+  </div>
+</div>
