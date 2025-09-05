@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Location } from '@angular/common';  // 👈 add this
 import { supabase } from '../../../../../supabaseClient';
 
 @Component({
@@ -28,7 +29,7 @@ export class SongDetailComponent implements OnInit {
   errorMsg: string | null = null;
   successMsg: string | null = null;
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute, private location: Location) {} // 👈 inject Location
 
   async ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -69,6 +70,16 @@ export class SongDetailComponent implements OnInit {
     }
 
     this.loading = false;
+  }
+
+  // ===== Back button =====
+  goBack() {
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      // fallback to catalog if no history
+      window.location.href = '/songs';
+    }
   }
 
   // ===== Add-to-setlist flow (matches catalog) =====

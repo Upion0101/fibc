@@ -121,7 +121,7 @@
       <div *ngIf="creatingNew">
         <label class="field-label">New setlist name</label>
         <input class="input" type="text" [(ngModel)]="newSetlistName" placeholder="e.g., March 9 Sunday AM" />
-        <button class="btn btn-primary w-100" [disabled]="!newSetlistName?.trim() || actionLoading" (click)="createSetlistAndAdd()">
+        <button class="btn btn-primary w-100" [disabled]="!newSetlistName.trim() || actionLoading" (click)="createSetlistAndAdd()">
           {{ actionLoading ? 'Creating…' : 'Create & Add' }}
         </button>
       </div>

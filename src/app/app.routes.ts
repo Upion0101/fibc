@@ -60,9 +60,9 @@ export const routes: Routes = [
       import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
 
-  // 🎵 Songs (protected)
+  // 🎵 Songs
   {
-    path: 'songs/:id', // put dynamic first
+    path: 'songs/:id',
     canActivate: [AuthGuard],
     loadComponent: () =>
       import('./features/songs/song-detail/song-detail.component').then(
@@ -75,6 +75,42 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/songs/song-catalog/song-catalog.component').then(
         m => m.SongCatalogComponent
+      )
+  },
+
+  // 📋 Setlists
+  {
+    path: 'setlists',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./pages/setlists/setlist-list/setlist-list.component').then(
+        m => m.SetlistListComponent
+      )
+  },
+  {
+    path: 'setlists/:id',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./pages/setlists/setlist-detail/setlist-detail.component').then(
+        m => m.SetlistDetailComponent
+      )
+  },
+
+  // 📅 Calendar (services/rehearsals/assignments)
+  {
+    path: 'calendar',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./features/calendar/calendar//calendar.component').then(
+        m => m.CalendarComponent
+      )
+  },
+  {
+    path: 'calendar/:id',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./features/calendar/calendar-detail/calendar-detail.component').then(
+        m => m.EventDetailComponent
       )
   },
 

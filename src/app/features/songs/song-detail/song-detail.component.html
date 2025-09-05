@@ -1,6 +1,13 @@
 <section class="section">
   <div class="container song-detail">
 
+    <!-- Mini Topbar -->
+    <div class="topbar">
+      <button class="btn btn-ghost back-btn" (click)="goBack()" aria-label="Go back to previous page">
+        ← Back
+      </button>
+    </div>
+
     <!-- Header + action -->
     <div class="header-row">
       <div>
@@ -75,7 +82,7 @@
         <label class="field-label">New setlist name</label>
         <input class="input" type="text" [(ngModel)]="newSetlistName" placeholder="e.g., March 9 Sunday AM" />
         <button class="btn btn-primary w-100"
-                [disabled]="!newSetlistName?.trim() || actionLoading"
+                [disabled]="!newSetlistName.trim() || actionLoading"
                 (click)="createSetlistAndAdd()">
           {{ actionLoading ? 'Creating…' : 'Create & Add' }}
         </button>
@@ -88,3 +95,4 @@
     </div>
   </div>
 </section>
+
