@@ -54,7 +54,7 @@
 
     <!-- 🔐 Dashboard (only if logged in) -->
     <ng-container *ngIf="user">
-      <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">Dashboard</a>
+      <a class="btn btn-primary" routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">Member Dashboard</a>
     </ng-container>
 
     <!-- 🔐 Auth Section (Mobile) -->

@@ -14,8 +14,9 @@ import { supabase } from '../../../../../supabaseClient';
 export class CalendarDetailComponent implements OnInit {
   event: any = { event_date: '', type: '', notes: '', setlist_id: null };
   isNew = true;
-
-  setlists: Array<{ id: string; name: string }> = [];
+  setlists: any[] = [];
+  members: any[] = [];
+  assignedMemberIds: string[] = [];
   loading = true;
 
   constructor(private route: ActivatedRoute, private router: Router) {}
@@ -23,67 +24,83 @@ export class CalendarDetailComponent implements OnInit {
   async ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
 
-    // 🔹 Load setlists
-    const { data: setlistData, error: setlistErr } = await supabase
-      .from('setlists')
-      .select('id, name')
-      .order('created_at', { ascending: false });
+    const { data: setlists } = await supabase.from('setlists').select('id, name');
+    this.setlists = setlists || [];
 
-    if (setlistErr) {
-      console.error('❌ Error loading setlists:', setlistErr);
-      this.setlists = [];
-    } else {
-      this.setlists = setlistData || [];
-    }
+    const { data: members } = await supabase.from('members').select('id, name, role');
+    this.members = members || [];
 
-    // 🔹 Load event if editing
     if (id && id !== 'new') {
       this.isNew = false;
-      const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .eq('id', id)
-        .single();
+      const { data } = await supabase.from('events').select('*').eq('id', id).single();
+      if (data) this.event = data;
 
-      if (error) {
-        console.error('❌ Error loading event:', error);
-      } else if (data) {
-        this.event = data;
-      }
+      const { data: assigned } = await supabase
+        .from('event_members')
+        .select('member_id')
+        .eq('event_id', id);
+
+      this.assignedMemberIds = (assigned || []).map(a => a.member_id);
     }
 
     this.loading = false;
   }
 
-  async saveEvent() {
-  const payload = {
-    event_date: this.event.event_date
-      ? new Date(this.event.event_date).toISOString().slice(0, 10) // store as `date`
-      : null,
-    type: this.event.type || 'service',
-    notes: this.event.notes || '',
-    setlist_id: this.event.setlist_id || null,
-    name: this.event.name || '' // required column
-  };
-
-  console.log('🟢 Saving event payload:', payload);
-
-  let error;
-  if (this.isNew) {
-    ({ error } = await supabase.from('events').insert([payload]));
-  } else {
-    ({ error } = await supabase
-      .from('events')
-      .update(payload)
-      .eq('id', this.event.id));
+  isMemberAssigned(memberId: string): boolean {
+    return this.assignedMemberIds.includes(memberId);
   }
 
-  if (error) {
-    console.error('❌ Error saving event:', error);
-  } else {
+  toggleMember(memberId: string) {
+    if (this.isMemberAssigned(memberId)) {
+      this.assignedMemberIds = this.assignedMemberIds.filter(id => id !== memberId);
+    } else {
+      this.assignedMemberIds.push(memberId);
+    }
+  }
+
+  async saveEvent() {
+    const payload = {
+      event_date: this.event.event_date,
+      type: this.event.type,
+      notes: this.event.notes,
+      setlist_id: this.event.setlist_id,
+      name: this.event.name,
+      start_time: this.event.start_time,
+      end_time: this.event.end_time
+    };
+
+    let result;
+    if (this.isNew) {
+      result = await supabase.from('events').insert([payload]).select('id').single();
+      this.event.id = result.data?.id;
+    } else {
+      result = await supabase.from('events').update(payload).eq('id', this.event.id);
+    }
+
+    if (result.error) {
+      console.error('❌ Error saving event:', result.error);
+      return;
+    }
+
+    await supabase.from('event_members').delete().eq('event_id', this.event.id);
+    const rows = this.assignedMemberIds.map(mid => ({ event_id: this.event.id, member_id: mid }));
+    if (rows.length) await supabase.from('event_members').insert(rows);
+
     this.router.navigate(['/calendar']);
   }
-}
+
+  async deleteEvent() {
+    if (!confirm('Are you sure you want to delete this event?')) return;
+
+    const { error } = await supabase.from('events').delete().eq('id', this.event.id);
+
+    if (error) {
+      console.error('❌ Error deleting event:', error);
+    } else {
+      console.log(`✅ Event ${this.event.id} deleted`);
+      this.router.navigate(['/calendar']);
+    }
+  }
 
   goBack() {
     this.router.navigate(['/calendar']);

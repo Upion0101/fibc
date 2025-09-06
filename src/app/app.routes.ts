@@ -14,8 +14,13 @@ export const routes: Routes = [
   // 🔐 Authentication
   { path: 'login', loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent) },
 
-  // 🔒 Protected pages (using supabaseAuthGuard now)
-  { path: 'members', canActivate: [supabaseAuthGuard], loadComponent: () => import('./pages/members/members.component').then(m => m.MembersComponent) },
+  // 👥 Public-facing Members page
+  { path: 'members', loadComponent: () => import('./pages/members/members.component').then(m => m.MembersComponent) },
+
+  // 🔒 Private Members management (Supabase-driven)
+  { path: 'members-admin', canActivate: [supabaseAuthGuard], loadComponent: () => import('./features/members/members/members.component').then(m => m.MembersComponent) },
+
+  // 🔒 Dashboard
   { path: 'dashboard', canActivate: [supabaseAuthGuard], loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent) },
 
   // 🎵 Songs

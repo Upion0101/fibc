@@ -1,17 +1,28 @@
 <section class="section">
   <div class="container calendar">
-    <h1>📅 Calendar</h1>
+    <div class="header-row">
+      <h1>📅 Upcoming Events</h1>
+      <button class="btn btn-primary" (click)="createEvent()">+ New Event</button>
+    </div>
 
-    <button class="btn btn-primary" (click)="createEvent()">+ New Event</button>
-
-    <div *ngIf="loading">Loading events…</div>
+    <div *ngIf="loading" class="muted">Loading events…</div>
     <div *ngIf="!loading && !events.length" class="muted">No events found</div>
 
     <ul class="event-list" *ngIf="!loading && events.length">
-      <li *ngFor="let e of events" (click)="openEvent(e.id)" class="event-row">
-        <div class="event-date">{{ e.event_date | date:'fullDate' }}</div>
-        <div class="event-type">{{ e.type | titlecase }}</div>
-        <div class="event-notes">{{ e.notes || '—' }}</div>
+      <li *ngFor="let e of events" class="event-row">
+        <div class="event-info" (click)="openEvent(e.id)">
+          <div class="event-date">{{ e.event_date | date:'fullDate' }}</div>
+          <div class="event-time">{{ e.start_time || '—' }} - {{ e.end_time || '—' }}</div>
+          <div class="event-name">{{ e.name }}</div>
+          <div class="event-type">{{ e.type | titlecase }}</div>
+          <div class="event-notes">{{ e.notes || 'No notes' }}</div>
+        </div>
+        <button
+          class="btn btn-small btn-ghost"
+          (click)="deleteEvent(e.id); $event.stopPropagation()"
+        >
+          🗑 Remove
+        </button>
       </li>
     </ul>
   </div>

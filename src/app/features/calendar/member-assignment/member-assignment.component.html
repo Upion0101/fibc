@@ -1,1 +1,23 @@
-<p>member-assignment works!</p>
+<div class="member-assignment">
+  <h2>Assign Members</h2>
+
+  <div *ngIf="loading" class="muted">Loading members…</div>
+
+  <div *ngIf="!loading">
+    <label for="members">Select members:</label>
+    <select
+      id="members"
+      multiple
+      [(ngModel)]="selectedMemberIds"
+      class="select"
+    >
+      <option *ngFor="let m of members" [value]="m.id">
+        {{ m.name }} ({{ m.role || 'No role' }})
+      </option>
+    </select>
+
+    <button class="btn btn-primary" (click)="saveAssignments()">
+      Save Assignments
+    </button>
+  </div>
+</div>

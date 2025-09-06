@@ -1,20 +1,26 @@
 <section class="section">
   <div class="container calendar-detail">
-    <h1>{{ isNew ? '➕ New Event' : '✏️ Edit Event' }}</h1>
+    <div class="header-row">
+      <button class="btn btn-ghost" (click)="goBack()">← Back</button>
+      <h1>{{ isNew ? '➕ New Event' : '✏️ Edit Event' }}</h1>
+    </div>
 
     <form (ngSubmit)="saveEvent()" *ngIf="!loading">
+      <!-- Event fields -->
+      <label class="field-label">Name</label>
+      <input class="input" type="text" [(ngModel)]="event.name" name="name" required />
+
       <label class="field-label">Date</label>
-      <input
-        class="input"
-        type="date"
-        [(ngModel)]="event.event_date"
-        name="date"
-        required
-      />
+      <input class="input" type="date" [(ngModel)]="event.event_date" name="date" required />
+
+      <label class="field-label">Start Time</label>
+      <input class="input" type="time" [(ngModel)]="event.start_time" name="start_time" required />
+
+      <label class="field-label">End Time</label>
+      <input class="input" type="time" [(ngModel)]="event.end_time" name="end_time" required />
 
       <label class="field-label">Type</label>
       <select class="select" [(ngModel)]="event.type" name="type" required>
-        <option value="">Select type…</option>
         <option value="service">Service</option>
         <option value="rehearsal">Rehearsal</option>
         <option value="other">Other</option>
@@ -28,19 +34,37 @@
       <a routerLink="/setlists" class="small-link">➕ Create new setlist</a>
 
       <label class="field-label">Notes</label>
-      <textarea
-        class="input"
-        rows="3"
-        [(ngModel)]="event.notes"
-        name="notes"
-        placeholder="Optional notes (e.g., special songs, instructions)"
-      ></textarea>
+      <textarea class="input" rows="3" [(ngModel)]="event.notes" name="notes"></textarea>
+
+      <!-- Members -->
+      <label class="field-label">Assign Members</label>
+      <div class="member-list">
+        <div *ngFor="let m of members" class="member-row">
+          <span>{{ m.name }} ({{ m.role || '—' }})</span>
+          <button
+            type="button"
+            class="btn btn-small"
+            [ngClass]="isMemberAssigned(m.id) ? 'btn-secondary' : 'btn-ghost'"
+            (click)="toggleMember(m.id)"
+          >
+            {{ isMemberAssigned(m.id) ? 'Remove' : 'Add' }}
+          </button>
+        </div>
+      </div>
 
       <div class="actions">
         <button type="submit" class="btn btn-primary w-100">
           {{ isNew ? 'Create Event' : 'Save Changes' }}
         </button>
         <button type="button" class="btn btn-ghost w-100" (click)="goBack()">Cancel</button>
+        <button
+          *ngIf="!isNew"
+          type="button"
+          class="btn btn-danger w-100"
+          (click)="deleteEvent()"
+        >
+          🗑 Delete Event
+        </button>
       </div>
     </form>
 

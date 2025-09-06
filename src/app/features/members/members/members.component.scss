@@ -1,0 +1,79 @@
+.members {
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .member-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    .member-row {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1rem;
+      margin-bottom: 1rem;
+
+      .member-info {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 0.5rem;
+
+        strong {
+          font-size: 1.1rem;
+        }
+
+        .role {
+          font-size: 0.9rem;
+          color: var(--muted);
+        }
+      }
+
+      .assignments {
+        margin-top: 0.75rem;
+
+        h4 {
+          font-size: 0.95rem;
+          margin-bottom: 0.5rem;
+          color: var(--primary);
+        }
+
+        .event-item {
+          margin-bottom: 0.75rem;
+        }
+
+        .setlist-info {
+          margin-top: 0.25rem;
+
+          .setlist-link {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+          }
+          .setlist-link:hover {
+            text-decoration: underline;
+          }
+
+          .songs {
+            margin: 0.25rem 0 0 1rem;
+            padding: 0;
+            list-style: disc;
+
+            li {
+              font-size: 0.9rem;
+              color: var(--muted);
+            }
+          }
+        }
+      }
+
+      .btn-small {
+        margin-top: 0.5rem;
+      }
+    }
+  }
+}

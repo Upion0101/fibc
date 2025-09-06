@@ -1,1 +1,49 @@
-<p>members works!</p>
+<section class="section">
+  <div class="container members">
+    <div class="header-row">
+      <h1>👥 Members</h1>
+      <button class="btn btn-primary" (click)="addMember()">+ Add Member</button>
+    </div>
+
+    <div *ngIf="loading" class="muted">Loading members…</div>
+    <div *ngIf="!loading && !members.length" class="muted">No members found</div>
+
+    <ul class="member-list" *ngIf="!loading && members.length">
+      <li *ngFor="let m of members" class="member-row">
+        <div class="member-info">
+          <strong>{{ m.name }}</strong>
+          <span class="muted">{{ m.email }}</span>
+          <span class="role">{{ m.role || '—' }}</span>
+        </div>
+
+        <div class="assignments" *ngIf="m.assignments?.length; else noEvents">
+          <h4>Assigned Events:</h4>
+          <ul>
+            <li *ngFor="let e of m.assignments" class="event-item">
+              📅 {{ e.event_date | date:'fullDate' }} –
+              <strong>{{ e.name }}</strong> ({{ e.type }})
+
+              <div *ngIf="e.setlist" class="setlist-info">
+                🎵 Setlist:
+                <a [routerLink]="['/setlists', e.setlist.id]" class="setlist-link">
+                  {{ e.setlist.name }}
+                </a>
+                <ul class="songs">
+                  <li *ngFor="let s of e.setlist.setlist_songs">
+                    • {{ s.songs.title }}
+                    <span *ngIf="s.songs.artist">– {{ s.songs.artist }}</span>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <ng-template #noEvents>
+          <p class="muted">No events assigned</p>
+        </ng-template>
+
+        <button class="btn btn-ghost btn-small" (click)="deleteMember(m.id)">Remove</button>
+      </li>
+    </ul>
+  </div>
+</section>
