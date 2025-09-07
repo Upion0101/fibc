@@ -1,69 +1,119 @@
+.container.calendar {
+  display: grid;
+  gap: 1.25rem;
+}
+
 .header-row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
+  align-items: center;
+  gap: .75rem;
+  flex-wrap: wrap;
 
   h1 {
-    font-size: 1.5rem;
-    font-weight: 600;
+    margin: 0;
+    line-height: 1.2;
   }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .btn-group {
+    display: inline-flex;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: .6rem;
+    overflow: hidden;
+
+    .btn-ghost {
+      border: 0;
+      border-radius: 0;
+    }
+    .active {
+      background: var(--muted, #f3f4f6);
+      font-weight: 600;
+    }
+  }
+}
+
+/* Responsive Google Calendar iframe */
+.gc-wrap {
+  position: relative;
+  width: 100%;
+  padding-bottom: 75vh; /* responsive height; tweak for your page */
+  background: #fff;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: .75rem;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+
+.gc-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+}
+
+/* List view */
+.subheading {
+  margin: .5rem 0 0;
+  font-size: 1.1rem;
+  color: var(--muted-fg, #6b7280);
 }
 
 .event-list {
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
+  display: grid;
+  gap: .75rem;
+}
 
-  .event-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 1rem;
-    border: 1px solid #e5e7eb;
-    border-radius: var(--radius);
-    margin-bottom: 1rem;
-    background: #fff;
-    cursor: pointer;
-    transition: background 0.2s ease;
+.event-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: .75rem;
+  padding: .9rem 1rem;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: .75rem;
+  background: #fff;
+}
 
-    &:hover {
-      background: var(--background);
-    }
+.event-info {
+  display: grid;
+  gap: .25rem;
+  cursor: pointer;
 
-    .event-date {
-      font-weight: 600;
-      color: var(--primary);
-    }
+  .event-name {
+    font-weight: 600;
+  }
 
-    .event-time {
-      font-size: 0.9rem;
-      color: var(--muted);
-    }
+  .synced-label {
+    font-size: .8rem;
+    color: #2563eb;
+    margin-left: .35rem;
+  }
 
-    .event-name {
-      font-size: 1.1rem;
-      font-weight: 500;
-    }
-
-    .event-type {
-      font-size: 0.85rem;
-      color: var(--secondary);
-    }
-
-    .event-notes {
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
+  .event-date,
+  .event-time,
+  .event-type,
+  .event-notes {
+    color: var(--muted-fg, #6b7280);
   }
 }
 
-/* 📱 Mobile tweaks */
-@media (max-width: 600px) {
-  .event-row {
-    padding: 0.75rem;
-    .event-name {
-      font-size: 1rem;
-    }
-  }
+.subscribe-section {
+  display: grid;
+  gap: .5rem;
+  margin-top: .75rem;
+}
+
+.muted {
+  color: var(--muted-fg, #6b7280);
 }

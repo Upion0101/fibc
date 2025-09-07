@@ -1,9 +1,26 @@
 <section class="section">
   <div class="container calendar">
+
     <div class="header-row">
-      <h1>📅 Upcoming Events</h1>
-      <button class="btn btn-primary" (click)="createEvent()">+ New Event</button>
+      <h1>📅 Church Calendar</h1>
+      <div class="actions">
+        <button class="btn btn-primary" (click)="createEvent()">+ New Event</button>
+      </div>
     </div>
+
+    <!-- ======= Embedded Google Calendar (real UI) ======= -->
+    <div class="gc-wrap" *ngIf="embedUrl">
+      <iframe
+        class="gc-iframe"
+        title="Google Calendar"
+        [src]="embedUrl"
+        frameborder="0"
+        scrolling="no">
+      </iframe>
+    </div>
+
+    <!-- ======= Existing List View (kept) ======= -->
+    <h2 class="subheading">Upcoming Events</h2>
 
     <div *ngIf="loading" class="muted">Loading events…</div>
     <div *ngIf="!loading && !events.length" class="muted">No events found</div>
@@ -13,17 +30,32 @@
         <div class="event-info" (click)="openEvent(e.id)">
           <div class="event-date">{{ e.event_date | date:'fullDate' }}</div>
           <div class="event-time">{{ e.start_time || '—' }} - {{ e.end_time || '—' }}</div>
-          <div class="event-name">{{ e.name }}</div>
-          <div class="event-type">{{ e.type | titlecase }}</div>
+          <div class="event-name">
+            {{ e.name }}
+            <span *ngIf="e.google_event_id" class="synced-label">☁ Synced</span>
+          </div>
+          <div class="event-type">{{ e.type || 'General' }}</div>
           <div class="event-notes">{{ e.notes || 'No notes' }}</div>
         </div>
         <button
           class="btn btn-small btn-ghost"
-          (click)="deleteEvent(e.id); $event.stopPropagation()"
-        >
+          (click)="deleteEvent(e.id); $event.stopPropagation()">
           🗑 Remove
         </button>
       </li>
     </ul>
+
+    <!-- Public subscribe helper -->
+    <div class="subscribe-section" *ngIf="!loading">
+      <p class="muted">Want to see events directly in your Google Calendar?</p>
+      <a
+        href="https://calendar.google.com/calendar/u/0?cid={{ encodeSubscribeCid(calendarId) }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-secondary">
+        ➕ Subscribe to Worship Team Calendar
+      </a>
+    </div>
+
   </div>
 </section>

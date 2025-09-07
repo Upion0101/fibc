@@ -2,6 +2,12 @@
   command = "ng build --configuration production"
   publish = "dist/fibc/browser"
 
+# Tell Netlify where your serverless functions live
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  external_node_modules = ["@aws-sdk/client-s3","@aws-sdk/s3-request-presigner"]
+
 # Redirect all routes to index.html (Angular handles routing client-side)
 [[redirects]]
   from = "/*"

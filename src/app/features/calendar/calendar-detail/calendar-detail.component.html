@@ -5,6 +5,7 @@
       <h1>{{ isNew ? '➕ New Event' : '✏️ Edit Event' }}</h1>
     </div>
 
+    <!-- Form renders once loading is done -->
     <form (ngSubmit)="saveEvent()" *ngIf="!loading">
       <!-- Event fields -->
       <label class="field-label">Name</label>
@@ -50,6 +51,18 @@
             {{ isMemberAssigned(m.id) ? 'Remove' : 'Add' }}
           </button>
         </div>
+      </div>
+
+      <!-- Google Calendar Sync Status -->
+      <div class="google-sync">
+        <label class="field-label">Google Calendar</label>
+        <p *ngIf="event.google_event_id; else notSynced" class="synced">
+          ☁ Synced with Google Calendar
+          <small>ID: {{ event.google_event_id }}</small>
+        </p>
+        <ng-template #notSynced>
+          <p class="not-synced">⚠ Not yet synced to Google Calendar</p>
+        </ng-template>
       </div>
 
       <div class="actions">

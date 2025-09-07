@@ -60,10 +60,16 @@ export class SongCatalogComponent implements OnInit {
     // Apply ONE search filter server-side (keeps it simple)
     if (this.searchQuery.trim()) {
       const q = `%${this.searchQuery}%`;
-      if (this.searchByTitle) query = query.ilike('title', q);
-      else if (this.searchByAuthor) query = query.ilike('artist', q);
-      else if (this.searchByTheme) query = query.ilike('theme', q);
-      else if (this.searchByLyrics) query = query.ilike('lyrics', q);
+      if (this.searchByTitle) {
+        query = query.ilike('title', q);
+      } else if (this.searchByAuthor) {
+        // NOTE: kept original behavior (artist column) to avoid breaking changes
+        query = query.ilike('artist', q);
+      } else if (this.searchByTheme) {
+        query = query.ilike('theme', q);
+      } else if (this.searchByLyrics) {
+        query = query.ilike('lyrics', q);
+      }
     }
 
     const { data, error } = await query;
@@ -77,6 +83,7 @@ export class SongCatalogComponent implements OnInit {
   }
 
   async fetchTotalCount() {
+    // Keep existing behavior: total count of all songs
     const { count, error } = await supabase
       .from('songs')
       .select('*', { count: 'exact', head: true });
@@ -131,6 +138,10 @@ export class SongCatalogComponent implements OnInit {
       this.currentPage--;
       await this.fetchSongs();
     }
+  }
+
+  trackById(_index: number, item: any) {
+    return item?.id ?? _index;
   }
 
   // ===== Add-to-setlist flow =====
@@ -216,7 +227,6 @@ export class SongCatalogComponent implements OnInit {
       if (insertErr) throw insertErr;
 
       this.successMsg = 'Added to setlist!';
-      // Optional: auto-close after a moment
       setTimeout(() => this.closeModal(), 600);
     } catch (e: any) {
       console.error(e);
@@ -230,7 +240,7 @@ export class SongCatalogComponent implements OnInit {
     if (!this.selectedSong || !this.newSetlistName?.trim()) return;
 
     this.errorMsg = null;
-    this.successMsg = null;
+       this.successMsg = null;
     this.actionLoading = true;
 
     try {

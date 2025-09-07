@@ -1,38 +1,45 @@
 <section class="section section-light">
   <div class="container song-catalog">
 
-    <!-- Top Search -->
+    <!-- Top Search / Actions -->
     <div class="catalog-header">
-      <input
-        type="text"
-        [(ngModel)]="searchQuery"
-        (ngModelChange)="onSearch()"
-        placeholder="Search Songs..."
-        class="search-bar"
-      />
-      <div class="search-filters muted">
-        <label>
-          <input type="checkbox" [(ngModel)]="searchByTitle" (change)="onSearch()" />
-          Title
-        </label>
-        <label>
-          <input type="checkbox" [(ngModel)]="searchByAuthor" (change)="onSearch()" />
-          Author
-        </label>
-        <label>
-          <input type="checkbox" [(ngModel)]="searchByTheme" (change)="onSearch()" />
-          Theme
-        </label>
-        <label>
-          <input type="checkbox" [(ngModel)]="searchByLyrics" (change)="onSearch()" />
-          Lyrics
-        </label>
+      <div class="search-stack">
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearch()"
+          placeholder="Search Songs..."
+          class="search-bar"
+          aria-label="Search Songs"
+        />
+        <div class="search-filters muted">
+          <label>
+            <input type="checkbox" [(ngModel)]="searchByTitle" (change)="onSearch()" />
+            Title
+          </label>
+          <label>
+            <input type="checkbox" [(ngModel)]="searchByAuthor" (change)="onSearch()" />
+            Author
+          </label>
+          <label>
+            <input type="checkbox" [(ngModel)]="searchByTheme" (change)="onSearch()" />
+            Theme
+          </label>
+          <label>
+            <input type="checkbox" [(ngModel)]="searchByLyrics" (change)="onSearch()" />
+            Lyrics
+          </label>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-primary" [routerLink]="['/songs', 'new']">+ New Song</a>
       </div>
     </div>
 
     <!-- Alphabet Bar -->
     <div class="alpha-bar muted">
-      <span *ngFor="let letter of alphabet" (click)="filterByLetter(letter)">
+      <span *ngFor="let letter of alphabet" (click)="filterByLetter(letter)" class="alpha-item">
         {{ letter }}
       </span>
     </div>
@@ -40,8 +47,8 @@
     <div class="catalog-body">
       <!-- Song List -->
       <div class="song-list">
-        <div class="song-row" *ngFor="let song of songs">
-          <div class="thumb"></div>
+        <div class="song-row" *ngFor="let song of songs; trackBy: trackById">
+          <div class="thumb" aria-hidden="true"></div>
           <div class="song-meta">
             <a [routerLink]="['/songs', song.id]" class="song-title">
               {{ song.title }}
@@ -59,11 +66,16 @@
             <button class="btn btn-ghost btn-small" (click)="openAddToSetlist(song)">➕ Add To Setlist</button>
           </div>
         </div>
+
+        <!-- Empty state -->
+        <div class="empty muted" *ngIf="songs?.length === 0">
+          No songs match your search. Try a different term or <a [routerLink]="['/songs','new']">add a new song</a>.
+        </div>
       </div>
 
       <!-- Sidebar -->
       <aside class="sidebar">
-        <button class="btn btn-primary w-100">+ New Song</button>
+        <a class="btn btn-primary w-100" [routerLink]="['/songs','new']">+ New Song</a>
         <ul class="nav-links">
           <li><a href="#">Alpha</a></li>
           <li><a href="#">Popular</a></li>

@@ -24,6 +24,7 @@ export const routes: Routes = [
   { path: 'dashboard', canActivate: [supabaseAuthGuard], loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent) },
 
   // 🎵 Songs
+  { path: 'songs/new', canActivate: [supabaseAuthGuard], loadComponent: () => import('./features/songs/song-create/song-create.component').then(m => m.SongCreateComponent) },
   { path: 'songs/:id', canActivate: [supabaseAuthGuard], loadComponent: () => import('./features/songs/song-detail/song-detail.component').then(m => m.SongDetailComponent) },
   { path: 'songs', canActivate: [supabaseAuthGuard], loadComponent: () => import('./features/songs/song-catalog/song-catalog.component').then(m => m.SongCatalogComponent) },
 

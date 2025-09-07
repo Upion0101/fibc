@@ -1,0 +1,105 @@
+<section class="section">
+  <div class="container song-create">
+
+    <div class="header-row">
+      <div>
+        <h1>Add Song</h1>
+        <p class="muted">Upload PDF/MP3 to Backblaze and save links & lyrics.</p>
+      </div>
+      <div class="actions">
+        <a class="btn btn-ghost" routerLink="/songs">← Back to Songs</a>
+      </div>
+    </div>
+
+    <form #f="ngForm" (ngSubmit)="submit(f)" novalidate class="form-card">
+      <div class="grid">
+        <div class="field">
+          <label>Song Title <span class="req">*</span></label>
+          <input class="input" type="text" name="title" [(ngModel)]="newSong.title" required />
+        </div>
+
+        <div class="field">
+          <label>Artist</label>
+          <input class="input" type="text" name="artist" [(ngModel)]="newSong.artist" />
+        </div>
+
+        <div class="field">
+          <label>Key</label>
+          <select class="select" name="key" [(ngModel)]="newSong.key">
+            <option *ngFor="let k of keys" [ngValue]="k">{{ k }}</option>
+          </select>
+          <div class="hint"><strong>NN</strong> = No Key (use Nashville Numbers).</div>
+        </div>
+
+        <div class="field">
+          <label>Authors <span class="hint">(comma separated)</span></label>
+          <input class="input" type="text" name="authorsText" [(ngModel)]="newSong.authorsText" placeholder="e.g., Chris Tomlin, Louie Giglio" />
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label>Tempo</label>
+          <input class="input" type="text" name="tempo" [(ngModel)]="newSong.tempo" placeholder="e.g., 72" />
+        </div>
+        <div class="field">
+          <label>Time Signature</label>
+          <input class="input" type="text" name="time_signature" [(ngModel)]="newSong.time_signature" placeholder="e.g., 4/4" />
+        </div>
+        <div class="field">
+          <label>Meter</label>
+          <input class="input" type="text" name="meter" [(ngModel)]="newSong.meter" placeholder="e.g., Common" />
+        </div>
+        <div class="field">
+          <label>Style</label>
+          <input class="input" type="text" name="style" [(ngModel)]="newSong.style" placeholder="e.g., Worship Ballad" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Song Map</label>
+        <input class="input" type="text" name="song_map" [(ngModel)]="newSong.song_map" placeholder="e.g., V1 / PC / C / V2 / PC / C / Bridge / C" />
+      </div>
+
+      <div class="field">
+        <label>Song Body <span class="req">*</span></label>
+        <textarea class="textarea" name="lyrics" [(ngModel)]="newSong.lyrics" rows="10" placeholder="Paste your text chord chart here (ChordPro or bracketed chords are fine)"></textarea>
+        <div class="hint">Use chords like <code>[Db]</code>, <code>Dbmaj9</code>, <code>Eb/G</code>.</div>
+      </div>
+
+      <div class="uploads">
+        <div class="upload-field">
+          <label>PDF (optional)</label>
+          <input type="file" accept="application/pdf" (change)="onPdfSelected($event)" />
+          <div class="hint">Stored in B2 under <code>songs/&lt;folder&gt;/chart.pdf</code>.</div>
+        </div>
+        <div class="upload-field">
+          <label>MP3 (optional)</label>
+          <input type="file" accept="audio/mpeg" (change)="onAudioSelected($event)" />
+          <div class="hint">Stored in B2 under <code>songs/&lt;folder&gt;/audio.mp3</code>.</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Reference Links (YouTube, Spotify, etc.)</label>
+        <div class="links">
+          <div class="link-row" *ngFor="let l of links; let i = index">
+            <input class="input" [name]="'link'+i" [(ngModel)]="links[i]" placeholder="https://youtube.com/..." />
+            <button type="button" class="btn btn-ghost" (click)="removeLinkRow(i)">✕</button>
+          </div>
+          <button type="button" class="btn btn-light" (click)="addLinkRow()">+ Add another link</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" type="submit" [disabled]="saving || !newSong.title">
+          {{ saving ? 'Saving…' : 'Create Song' }}
+        </button>
+        <a class="btn btn-ghost" routerLink="/songs">Cancel</a>
+      </div>
+
+      <p class="error" *ngIf="errorMsg">{{ errorMsg }}</p>
+      <p class="success" *ngIf="successMsg">{{ successMsg }}</p>
+    </form>
+  </div>
+</section>

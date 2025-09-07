@@ -16,6 +16,17 @@
       </div>
       <div class="actions">
         <button class="btn btn-primary" (click)="openAddToSetlist()">➕ Add to Setlist</button>
+
+        <!-- Delete shows ONLY for custom songs -->
+        <button
+          *ngIf="song?.is_custom"
+          class="btn btn-danger"
+          (click)="isDeleteOpen = true"
+          aria-label="Delete this custom song"
+          title="Delete this custom song (removes files and DB row)"
+        >
+          🗑 Delete
+        </button>
       </div>
     </div>
 
@@ -32,6 +43,7 @@
       <div><strong>Time Signature:</strong> {{ song?.time_signature || '—' }}</div>
       <div><strong>Meter:</strong> {{ song?.meter || '—' }}</div>
       <div><strong>Style:</strong> {{ song?.style || '—' }}</div>
+      <div><strong>Original Key:</strong> {{ originalKey }}</div>
     </div>
 
     <!-- Song Map -->
@@ -40,16 +52,75 @@
       <p>{{ song.song_map }}</p>
     </div>
 
+    <!-- Transpose / Key controls -->
+    <div class="transpose-bar" *ngIf="hasLyrics">
+      <label for="keySelect"><strong>Key:</strong></label>
+      <select
+        id="keySelect"
+        class="select"
+        [(ngModel)]="displayKey"
+        (ngModelChange)="onKeyChange($event)"
+        aria-label="Choose display key"
+      >
+        <option *ngFor="let k of keys" [ngValue]="k">{{ k }}</option>
+      </select>
+
+      <span class="muted" *ngIf="!isNN">
+        Showing in {{ displayKey }} (original: {{ originalKey }})
+        <ng-container *ngIf="enharmonicLabel(displayKey) as aka">
+          · <em>aka {{ aka }}</em>
+        </ng-container>
+      </span>
+
+      <span class="muted" *ngIf="isNN">
+        Showing in <strong>Nashville Numbers</strong> (relative to {{ originalKey }})
+      </span>
+    </div>
+
     <!-- Lyrics -->
-    <div class="lyrics" *ngIf="song?.lyrics">
+    <div class="lyrics" *ngIf="hasLyrics">
       <h3>Lyrics</h3>
-      <pre>{{ song.lyrics?.default || 'No lyrics available' }}</pre>
+
+      <!-- Plain string -->
+      <pre *ngIf="isString(transposedLyrics)">{{ transposedLyrics }}</pre>
+
+      <!-- Array of lines -->
+      <ng-container *ngIf="isArray(transposedLyrics)">
+        <pre *ngFor="let line of asArray(transposedLyrics)">{{ line }}</pre>
+      </ng-container>
+
+      <!-- Sectioned object -->
+      <ng-container *ngIf="isObject(transposedLyrics)">
+        <div class="section-block" *ngFor="let sec of (transposedLyrics | keyvalue)">
+          <h4 class="section-title">{{ sec.key }}</h4>
+          <pre *ngIf="!isArray(sec.value)">{{ sec.value }}</pre>
+          <ng-container *ngIf="isArray(sec.value)">
+            <pre *ngFor="let line of asArray(sec.value)">{{ line }}</pre>
+          </ng-container>
+        </div>
+      </ng-container>
     </div>
 
     <!-- Audio Player -->
     <div class="audio-player" *ngIf="song?.audio_url">
       <h3>🎧 Listen</h3>
       <audio controls [src]="song.audio_url"></audio>
+    </div>
+
+    <!-- PDF Chart -->
+    <div class="meta" *ngIf="song?.pdf_url">
+      <h3>📄 Chart</h3>
+      <a [href]="song.pdf_url" target="_blank" rel="noopener" class="btn btn-secondary">Open PDF</a>
+    </div>
+
+    <!-- Reference Links -->
+    <div class="meta" *ngIf="song?.reference_links?.length">
+      <h3>🔗 Reference Links</h3>
+      <ul>
+        <li *ngFor="let link of song.reference_links">
+          <a [href]="link" target="_blank" rel="noopener">{{ link }}</a>
+        </li>
+      </ul>
     </div>
   </div>
 
@@ -63,7 +134,6 @@
         <button class="mode-btn" [class.active]="creatingNew" (click)="creatingNew = true">Create New</button>
       </div>
 
-      <!-- Existing Setlist -->
       <div *ngIf="!creatingNew">
         <label class="field-label">Select a setlist</label>
         <select class="select" [(ngModel)]="selectedSetlistId">
@@ -77,7 +147,6 @@
         </button>
       </div>
 
-      <!-- New Setlist (no date asked) -->
       <div *ngIf="creatingNew">
         <label class="field-label">New setlist name</label>
         <input class="input" type="text" [(ngModel)]="newSetlistName" placeholder="e.g., March 9 Sunday AM" />
@@ -94,5 +163,23 @@
       <p class="success small" *ngIf="successMsg">{{ successMsg }}</p>
     </div>
   </div>
-</section>
 
+  <!-- Delete Confirmation Modal (only opens when user clicks Delete) -->
+  <div class="modal-backdrop" *ngIf="isDeleteOpen" (click)="isDeleteOpen = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Delete “{{ song?.title }}”?</h3>
+      <p class="muted">
+        This will permanently remove the song and its files (audio/PDF/manifest). This action cannot be undone.
+      </p>
+
+      <div class="row gap">
+        <button class="btn btn-ghost w-50" (click)="isDeleteOpen = false" [disabled]="deleteLoading">Cancel</button>
+        <button class="btn btn-danger w-50" (click)="confirmDelete()" [disabled]="deleteLoading">
+          {{ deleteLoading ? 'Deleting…' : 'Delete' }}
+        </button>
+      </div>
+
+      <p class="muted small" *ngIf="deleteError">{{ deleteError }}</p>
+    </div>
+  </div>
+</section>
