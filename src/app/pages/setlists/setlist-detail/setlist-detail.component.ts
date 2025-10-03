@@ -66,9 +66,8 @@ export class SetlistDetailComponent implements OnInit {
 
       const { data: songs, error: songsErr } = await supabase
         .from('songs')
-        .select('id, title, artist')   // ✅ no duration
+        .select('id, title, artist')
         .in('id', songIds);
-
 
       if (songsErr) throw songsErr;
 
@@ -76,8 +75,8 @@ export class SetlistDetailComponent implements OnInit {
         const song = songs?.find(s => s.id === slSong.song_id);
         return {
           ...song,
-          position: slSong.position,
-          setlistSongId: slSong.id
+          position: slSong.position,    // persisted order
+          setlistSongId: slSong.id      // row id in setlist_songs
         };
       });
     } catch (err: any) {
@@ -86,6 +85,10 @@ export class SetlistDetailComponent implements OnInit {
     } finally {
       this.loading = false;
     }
+  }
+
+  trackBySetlistSongId(_i: number, s: any) {
+    return s.setlistSongId;
   }
 
   goBack() {
@@ -120,25 +123,36 @@ export class SetlistDetailComponent implements OnInit {
     const index = this.songs.findIndex(s => s.setlistSongId === setlistSongId);
     if (index === -1) return;
 
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= this.songs.length) return;
+    const neighborIndex = direction === 'up' ? index - 1 : index + 1;
+    if (neighborIndex < 0 || neighborIndex >= this.songs.length) return;
 
-    const current = this.songs[index];
-    const target = this.songs[targetIndex];
+    // references to the two items being swapped
+    const a = this.songs[index];
+    const b = this.songs[neighborIndex];
 
+    // Swap in local array for instant UI update
+    [this.songs[index], this.songs[neighborIndex]] = [b, a];
+
+    // Also swap their position numbers locally to keep labels/export correct
+    const tmpPos = a.position;
+    a.position = b.position;
+    b.position = tmpPos;
+
+    // Persist both updates to Supabase
     try {
-      // Swap positions
-      await supabase.from('setlist_songs')
-        .update({ position: target.position })
-        .eq('id', current.setlistSongId);
-
-      await supabase.from('setlist_songs')
-        .update({ position: current.position })
-        .eq('id', target.setlistSongId);
-
-      await this.loadSetlist(this.setlist.id);
+      await Promise.all([
+        supabase.from('setlist_songs')
+          .update({ position: a.position })
+          .eq('id', a.setlistSongId),
+        supabase.from('setlist_songs')
+          .update({ position: b.position })
+          .eq('id', b.setlistSongId),
+      ]);
     } catch (err) {
       console.error('❌ Error reordering songs:', err);
+      // (Optional) If you want to rollback on error, swap back:
+      // [this.songs[index], this.songs[neighborIndex]] = [a, b];
+      // const t = a.position; a.position = b.position; b.position = t;
     }
   }
 
@@ -174,7 +188,8 @@ export class SetlistDetailComponent implements OnInit {
   }
 
   exportText() {
-    const lines = this.songs.map(s => `${s.position}. ${s.title} (${s.artist || 'Unknown'})`);
+    // Use on-screen order to guarantee numbering matches the UI
+    const lines = this.songs.map((s, idx) => `${idx + 1}. ${s.title} (${s.artist || 'Unknown'})`);
     const text = `Setlist: ${this.setlist.name}\n\n${lines.join('\n')}`;
     const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);

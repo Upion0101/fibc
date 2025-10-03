@@ -1,4 +1,4 @@
-<section class="section section-light">
+<section class="section section-light setlist-detail">
   <div class="container">
     <ng-container *ngIf="loading">Loading…</ng-container>
     <ng-container *ngIf="!loading && errorMsg"><p class="error">{{ errorMsg }}</p></ng-container>
@@ -28,21 +28,27 @@
 
       <div *ngIf="songs.length > 0; else noSongs">
         <ul class="song-list">
-            <li *ngFor="let song of songs" class="song-row">
+          <li
+            *ngFor="let song of songs; let i = index; trackBy: trackBySetlistSongId"
+            class="song-row"
+          >
             <div class="song-info">
-                <strong>#{{ song.position }}</strong> — {{ song.title }}
-                <span class="muted">({{ song.artist || 'Unknown Artist' }})</span>
+              <!-- show UI order to avoid any stale DB position weirdness -->
+              <strong>#{{ i + 1 }}</strong> — {{ song.title }}
+              <span class="muted">({{ song.artist || 'Unknown Artist' }})</span>
             </div>
             <div class="song-actions">
-                <button class="btn btn-ghost btn-small" (click)="moveSong(song.setlistSongId, 'up')">⬆</button>
-                <button class="btn btn-ghost btn-small" (click)="moveSong(song.setlistSongId, 'down')">⬇</button>
-                <button class="btn btn-ghost btn-small"
+              <button class="btn btn-ghost btn-small" (click)="moveSong(song.setlistSongId, 'up')">⬆</button>
+              <button class="btn btn-ghost btn-small" (click)="moveSong(song.setlistSongId, 'down')">⬇</button>
+              <button
+                class="btn btn-ghost btn-small"
                 (click)="removeSong(song.setlistSongId)"
-                [disabled]="actionLoading === song.setlistSongId">
+                [disabled]="actionLoading === song.setlistSongId"
+              >
                 {{ actionLoading === song.setlistSongId ? 'Removing…' : 'Remove' }}
-                </button>
+              </button>
             </div>
-            </li>
+          </li>
         </ul>
       </div>
 
