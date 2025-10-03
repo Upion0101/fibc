@@ -85,6 +85,9 @@ export class SongDetailComponent implements OnInit {
     this.originalKey = this.normalizeKey('C');
     this.displayKey = this.originalKey;
 
+    // Normalize new fields (cover, duration, meta display)
+    this.normalizeMediaFields();
+
     // Signed audio (if present)
     if (this.song.audio_path) {
       await this.safeSignToUrl('audio_path', 'audio_url');
@@ -124,6 +127,85 @@ export class SongDetailComponent implements OnInit {
     this.loading = false;
   }
 
+  // ===== Normalize cover image + duration + display fields =====
+  private normalizeMediaFields() {
+    if (!this.song) return;
+
+    // Authors display string
+    if (this.song.authors) {
+      try {
+        const parsed = Array.isArray(this.song.authors)
+          ? this.song.authors
+          : JSON.parse(this.song.authors);
+        this.song.authors_display = parsed.join(', ');
+      } catch {
+        this.song.authors_display = this.song.authors;
+      }
+    }
+
+    // Artist/Album/Genre/Year
+    this.song.artist_display = this.song.artist || null;
+    this.song.album_display  = this.song.album  || null;
+    this.song.genre_display  = this.song.genre  || null;
+    this.song.year_display   = this.song.year   || null;
+
+    // Duration formatting (if numeric seconds)
+    if (this.song.duration && !isNaN(this.song.duration)) {
+      const secs = parseInt(this.song.duration, 10);
+      const minutes = Math.floor(secs / 60);
+      const remaining = secs % 60;
+      this.song.duration_display = `${minutes}:${remaining.toString().padStart(2, '0')}`;
+    } else {
+      this.song.duration_display = this.song.duration || null;
+    }
+
+    // Normalize cover image
+    // Normalize cover image
+    if (this.song.cover_image) {
+      try {
+        let raw = String(this.song.cover_image).trim();
+        raw = raw.replace(/[\[\]"]/g, ''); // strip [] and quotes
+
+        // Case 1: Already valid base64 data URI
+        if (raw.startsWith('data:image') && !raw.match(/\d+,\d+/)) {
+          console.log('🔹 Already valid Base64 data URI');
+          this.song.cover_image_display = raw;
+
+        // Case 2: Decimal byte string or fake "data:image" with decimals
+        } else if (/^\d+(,\d+)+$/.test(raw) || raw.includes(',')) {
+          console.log('🔹 Converting decimal cover_image for:', this.song.title);
+
+          // If it starts with "data:image" but contains commas, strip prefix
+          if (raw.startsWith('data:image')) {
+            raw = raw.replace(/^data:image\/jpeg;base64,/, '');
+          }
+
+          const numbers = raw.split(',').map(n => parseInt(n.trim(), 10));
+          const uint8 = new Uint8Array(numbers);
+
+          let binary = '';
+          for (let i = 0; i < uint8.length; i++) {
+            binary += String.fromCharCode(uint8[i]);
+          }
+          const base64 = btoa(binary);
+
+          this.song.cover_image_display = `data:image/jpeg;base64,${base64}`;
+
+        // Case 3: Assume raw base64 missing prefix
+        } else {
+          console.log('🔹 Assuming raw base64 (no prefix) for:', this.song.title);
+          this.song.cover_image_display = `data:image/jpeg;base64,${raw}`;
+        }
+
+      } catch (err) {
+        console.error('❌ Failed to parse cover_image:', err);
+        this.song.cover_image_display = null;
+      }
+    } else {
+      this.song.cover_image_display = null;
+    }
+  }
+
   // ===== Delete action (custom songs only) =====
   async confirmDelete() {
     if (!this.song?.id) return;
@@ -131,7 +213,6 @@ export class SongDetailComponent implements OnInit {
     this.deleteLoading = true;
 
     try {
-      // Guard on the client as well (HTML already hides for non-custom)
       if (!this.song.is_custom) {
         throw new Error('This song cannot be deleted.');
       }
@@ -150,7 +231,6 @@ export class SongDetailComponent implements OnInit {
         throw new Error(msg);
       }
 
-      // Success → close and navigate away
       this.isDeleteOpen = false;
       window.location.href = '/songs';
     } catch (e: any) {
@@ -177,8 +257,7 @@ export class SongDetailComponent implements OnInit {
     }
   }
 
-  // Primary signer uses unified function: /.netlify/functions/b2-sign
-  // Falls back to the older read-only route if present.
+  // Primary signer uses unified function
   private async signRead(objectKey: string, contentType?: string, download?: string): Promise<string | null> {
     const qs = new URLSearchParams({
       path: objectKey,
@@ -186,13 +265,11 @@ export class SongDetailComponent implements OnInit {
       ...(contentType ? { contentType } : {}),
       ...(download ? { download } : {}),
     });
-    // 1) unified signer
     let res = await fetch(`/.netlify/functions/b2-sign?${qs.toString()}`);
     if (res.ok) {
       const json = await res.json();
       return json?.url || null;
     }
-    // 2) fallback to legacy read signer (if still present)
     res = await fetch(`/.netlify/functions/b2-sign-read?path=${encodeURIComponent(objectKey)}`);
     if (res.ok) {
       const json = await res.json();
@@ -201,7 +278,6 @@ export class SongDetailComponent implements OnInit {
     return null;
   }
 
-  // Guess a reasonable content type for B2 GET response headers
   private inferContentType(key: string): string | undefined {
     const lower = key.toLowerCase();
     if (lower.endsWith('.mp3')) return 'audio/mpeg';
@@ -210,7 +286,6 @@ export class SongDetailComponent implements OnInit {
     return undefined;
   }
 
-  // Derived: do we actually have lyrics?
   get hasLyrics(): boolean {
     const l = this.originalLyrics ?? this.song?.lyrics;
     if (!l) return false;
@@ -327,15 +402,26 @@ export class SongDetailComponent implements OnInit {
 
   // ===== Setlist flow placeholders =====
   async openAddToSetlist() {
-    if (!this.song) return;
-    this.creatingNew = false;
-    this.selectedSetlistId = null;
-    this.newSetlistName = '';
-    this.errorMsg = null;
-    this.successMsg = null;
+  console.log('openAddToSetlist called');   // <--- add this
+  if (!this.song) return;
+
+  this.creatingNew = false;
+  this.selectedSetlistId = null;
+  this.newSetlistName = '';
+  this.errorMsg = null;
+  this.successMsg = null;
+
+  this.isModalOpen = true;
+  console.log('Modal should now be open');  // <--- add this
+
+  try {
     await this.loadSetlists();
-    this.isModalOpen = true;
+    console.log('Setlists loaded:', this.setlists); // <--- add this
+  } catch (e) {
+    console.error('Failed to load setlists:', e);
+    this.errorMsg = 'Could not load setlists';
   }
+}
   closeModal() {
     this.isModalOpen = false;
     this.selectedSetlistId = null;
@@ -345,14 +431,69 @@ export class SongDetailComponent implements OnInit {
     this.successMsg = null;
   }
   async loadSetlists() {
-    const { data, error } = await supabase
-      .from('setlists')
-      .select('id, name')
-      .order('created_at', { ascending: false });
-    this.setlists = error ? [] : (data || []).map(r => ({ id: r.id, name: r.name }));
+  console.log('Loading setlists from Supabase…');
+  const { data, error } = await supabase
+    .from('setlists')
+    .select('id, name')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Supabase error loading setlists:', error);
+    this.setlists = [];
+    return;
   }
-  async addToExisting() { /* your app code */ }
-  async createSetlistAndAdd() { /* your app code */ }
+
+  this.setlists = data?.map(r => ({ id: r.id, name: r.name })) || [];
+  console.log('✅ Setlists:', this.setlists);
+}
+
+async addToExisting() {
+  if (!this.selectedSetlistId || !this.song?.id) return;
+  this.actionLoading = true;
+
+  try {
+    const { error } = await supabase
+      .from('setlist_songs')   // your join table
+      .insert([{ setlist_id: this.selectedSetlistId, song_id: this.song.id }]);
+
+    if (error) throw error;
+
+    this.successMsg = 'Song added to setlist!';
+    this.closeModal();
+  } catch (e: any) {
+    this.errorMsg = e.message || 'Could not add song';
+  } finally {
+    this.actionLoading = false;
+  }
+}
+
+async createSetlistAndAdd() {
+  if (!this.newSetlistName.trim() || !this.song?.id) return;
+  this.actionLoading = true;
+
+  try {
+    const { data: newSetlist, error: setlistError } = await supabase
+      .from('setlists')
+      .insert([{ name: this.newSetlistName }])
+      .select('id')
+      .single();
+
+    if (setlistError) throw setlistError;
+
+    const { error: songError } = await supabase
+      .from('setlist_songs')
+      .insert([{ setlist_id: newSetlist.id, song_id: this.song.id }]);
+
+    if (songError) throw songError;
+
+    this.successMsg = 'Setlist created & song added!';
+    this.closeModal();
+  } catch (e: any) {
+    this.errorMsg = e.message || 'Could not create setlist';
+  } finally {
+    this.actionLoading = false;
+  }
+}
 
   // =========================
   // ===== Music theory  =====

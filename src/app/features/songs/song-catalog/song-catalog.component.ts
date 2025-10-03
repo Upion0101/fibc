@@ -26,7 +26,7 @@ export class SongCatalogComponent implements OnInit {
   // pagination
   currentPage: number = 1;
   pageSize: number = 15;
-  totalSongs: number = 0;  // for total pages
+  totalSongs: number = 0;
 
   // modal / setlist state
   isModalOpen = false;
@@ -52,19 +52,14 @@ export class SongCatalogComponent implements OnInit {
     const from = (this.currentPage - 1) * this.pageSize;
     const to = from + this.pageSize - 1;
 
-    let query = supabase
-      .from('songs')
-      .select('*')
-      .range(from, to);
+    let query = supabase.from('songs').select('*').range(from, to);
 
-    // Apply ONE search filter server-side (keeps it simple)
     if (this.searchQuery.trim()) {
       const q = `%${this.searchQuery}%`;
       if (this.searchByTitle) {
         query = query.ilike('title', q);
       } else if (this.searchByAuthor) {
-        // NOTE: kept original behavior (artist column) to avoid breaking changes
-        query = query.ilike('artist', q);
+        query = query.ilike('authors', q);
       } else if (this.searchByTheme) {
         query = query.ilike('theme', q);
       } else if (this.searchByLyrics) {
@@ -78,15 +73,14 @@ export class SongCatalogComponent implements OnInit {
       console.error('Error fetching songs:', error);
       this.songs = [];
     } else {
-      this.songs = data || [];
+      this.songs = this.normalizeSongs(data || []);
     }
   }
 
   async fetchTotalCount() {
-    // Keep existing behavior: total count of all songs
     const { count, error } = await supabase
       .from('songs')
-      .select('*', { count: 'exact', head: true });
+      .select('id', { count: 'exact', head: true });
 
     if (error) {
       console.error('Error fetching total count:', error);
@@ -118,7 +112,7 @@ export class SongCatalogComponent implements OnInit {
       console.error('Error filtering by letter:', error);
       this.songs = [];
     } else {
-      this.songs = data || [];
+      this.songs = this.normalizeSongs(data || []);
     }
   }
 
@@ -142,6 +136,89 @@ export class SongCatalogComponent implements OnInit {
 
   trackById(_index: number, item: any) {
     return item?.id ?? _index;
+  }
+
+  // ===== Helpers =====
+  normalizeSongs(songs: any[]): any[] {
+    return songs.map(song => {
+      // normalize authors
+      if (song.authors) {
+        try {
+          const parsed = Array.isArray(song.authors)
+            ? song.authors
+            : JSON.parse(song.authors);
+          song.authors_display = parsed.join(', ');
+        } catch {
+          song.authors_display = song.authors;
+        }
+      } else {
+        song.authors_display = null;
+      }
+
+      song.artist_display = song.artist || null;
+      song.album_display = song.album || null;
+
+      // ✅ Format duration if it looks like seconds
+      if (song.duration && !isNaN(song.duration)) {
+        song.duration_display = this.formatDuration(Number(song.duration));
+      } else {
+        song.duration_display = song.duration || null;
+      }
+
+      song.genre_display = song.genre || null;
+      song.year_display = song.year || null;
+
+      // ✅ handle cover_image
+      if (song.cover_image) {
+        try {
+          let raw = String(song.cover_image).trim();
+          raw = raw.replace(/[\[\]"]/g, ''); // strip [] and quotes
+
+          // Case 1: Already proper data URI
+          if (raw.startsWith('data:image') && !raw.match(/\d+,\d+/)) {
+            song.cover_image_display = raw;
+
+          // Case 2: Decimal string or fake "data:image"
+          } else if (/^\d+(,\d+)+$/.test(raw) || raw.includes(',')) {
+            if (raw.startsWith('data:image')) {
+              raw = raw.replace(/^data:image\/jpeg;base64,/, '');
+            }
+            const numbers = raw.split(',').map(n => parseInt(n.trim(), 10));
+            const uint8 = new Uint8Array(numbers);
+
+            let binary = '';
+            for (let i = 0; i < uint8.length; i++) {
+              binary += String.fromCharCode(uint8[i]);
+            }
+            const base64 = btoa(binary);
+
+            song.cover_image_display = `data:image/jpeg;base64,${base64}`;
+
+          // Case 3: Assume raw base64
+          } else {
+            song.cover_image_display = `data:image/jpeg;base64,${raw}`;
+          }
+        } catch (err) {
+          console.error('❌ Failed to parse cover_image:', err);
+          song.cover_image_display = null;
+        }
+      } else {
+        song.cover_image_display = null;
+      }
+
+      return song;
+    });
+  }
+
+  private formatDuration(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  private stripQuotes(val: any): string | null {
+    if (!val) return null;
+    return String(val).replace(/^"+|"+$/g, '');
   }
 
   // ===== Add-to-setlist flow =====
@@ -188,7 +265,6 @@ export class SongCatalogComponent implements OnInit {
     this.actionLoading = true;
 
     try {
-      // 1) Check if already in setlist
       const { data: existing, error: checkErr } = await supabase
         .from('setlist_songs')
         .select('id')
@@ -203,7 +279,6 @@ export class SongCatalogComponent implements OnInit {
         return;
       }
 
-      // 2) Get next position
       const { data: posRow, error: posErr } = await supabase
         .from('setlist_songs')
         .select('position')
@@ -213,15 +288,15 @@ export class SongCatalogComponent implements OnInit {
 
       if (posErr) throw posErr;
 
-      const nextPos = (posRow && posRow[0]?.position ? posRow[0].position : 0) + 1;
+      const nextPos =
+        (posRow && posRow[0]?.position ? posRow[0].position : 0) + 1;
 
-      // 3) Insert
       const { error: insertErr } = await supabase
         .from('setlist_songs')
         .insert({
           setlist_id: this.selectedSetlistId,
           song_id: this.selectedSong.id,
-          position: nextPos
+          position: nextPos,
         });
 
       if (insertErr) throw insertErr;
@@ -240,11 +315,10 @@ export class SongCatalogComponent implements OnInit {
     if (!this.selectedSong || !this.newSetlistName?.trim()) return;
 
     this.errorMsg = null;
-       this.successMsg = null;
+    this.successMsg = null;
     this.actionLoading = true;
 
     try {
-      // 1) Create setlist
       const { data: created, error: createErr } = await supabase
         .from('setlists')
         .insert({ name: this.newSetlistName.trim() })
@@ -255,13 +329,12 @@ export class SongCatalogComponent implements OnInit {
 
       const newId = created.id as string;
 
-      // 2) Add first song at position 1
       const { error: insertErr } = await supabase
         .from('setlist_songs')
         .insert({
           setlist_id: newId,
           song_id: this.selectedSong.id,
-          position: 1
+          position: 1,
         });
 
       if (insertErr) throw insertErr;

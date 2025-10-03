@@ -8,35 +8,65 @@
       </button>
     </div>
 
-    <!-- Header + action -->
-    <div class="header-row">
-      <div>
+    <!-- Header card layout like screenshot -->
+    <div class="song-card">
+      <!-- Left: Cover + album info -->
+      <div class="song-cover" *ngIf="song?.cover_image_display">
+        <img [src]="song.cover_image_display" alt="Cover image" />
+        <div class="song-meta">
+          <div><strong>Artist</strong><br>{{ song?.artist || song?.artist_display || '—' }}</div>
+          <div *ngIf="song?.album_display">
+            <strong>Album</strong><br>
+            <a href="#" target="_blank">{{ song.album_display }}</a>
+          </div>
+          <div *ngIf="song?.track_number"><strong>Track</strong> {{ song.track_number }}</div>
+        </div>
+      </div>
+
+      <!-- Right: title, authors, attrs -->
+      <div class="song-info">
         <h1>{{ song?.title }}</h1>
-        <p class="muted" *ngIf="song?.artist">By {{ song.artist }}</p>
-      </div>
-      <div class="actions">
-        <button class="btn btn-primary" (click)="openAddToSetlist()">➕ Add to Setlist</button>
 
-        <!-- Delete shows ONLY for custom songs -->
-        <button
-          *ngIf="song?.is_custom"
-          class="btn btn-danger"
-          (click)="isDeleteOpen = true"
-          aria-label="Delete this custom song"
-          title="Delete this custom song (removes files and DB row)"
-        >
-          🗑 Delete
-        </button>
+        <!-- Authors -->
+        <div *ngIf="song?.authors?.length" class="author-line">
+          <a href="#" *ngFor="let a of song.authors; let i = index">
+            {{ a }}<span *ngIf="i < song.authors.length - 1">, </span>
+          </a>
+        </div>
+
+        <!-- Attributes row -->
+        <div class="song-attrs">
+          <span><strong>Tempo</strong> {{ song?.tempo || '—' }}</span>
+          <span><strong>Theme</strong> {{ song?.theme || '—' }}</span>
+          <span><strong>Time Signature</strong> {{ song?.time_signature || '—' }}</span>
+          <span><strong>Meter</strong> {{ song?.meter || '—' }}</span>
+          <span><strong>Style</strong> {{ song?.style || '—' }}</span>
+        </div>
+
+        <!-- Controls -->
+        <div class="song-controls">
+          <button class="btn btn-secondary">Original Version</button>
+          <select class="select" [(ngModel)]="displayKey" (ngModelChange)="onKeyChange($event)">
+            <option *ngFor="let k of keys" [ngValue]="k">{{ k }}</option>
+          </select>
+        </div>
+
+        <!-- Actions (Add/Delete) -->
+        <div class="actions">
+          <button class="btn btn-primary" (click)="openAddToSetlist()">➕ Add to Setlist</button>
+          <button
+            *ngIf="song?.is_custom"
+            class="btn btn-danger"
+            (click)="isDeleteOpen = true"
+            aria-label="Delete this custom song"
+            title="Delete this custom song (removes files and DB row)">
+            🗑 Delete
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Authors -->
-    <div class="meta" *ngIf="song?.authors?.length">
-      <h3>Authors</h3>
-      <p>{{ song.authors.join(', ') }}</p>
-    </div>
-
-    <!-- Info -->
+    <!-- Existing Info Grid (kept) -->
     <div class="meta-grid">
       <div><strong>Tempo:</strong> {{ song?.tempo || '—' }}</div>
       <div><strong>Theme:</strong> {{ song?.theme || '—' }}</div>
@@ -44,6 +74,10 @@
       <div><strong>Meter:</strong> {{ song?.meter || '—' }}</div>
       <div><strong>Style:</strong> {{ song?.style || '—' }}</div>
       <div><strong>Original Key:</strong> {{ originalKey }}</div>
+
+      <!-- 🎵 New MP3 Metadata -->
+      <div *ngIf="song?.genre_display"><strong>Genre:</strong> {{ song.genre_display }}</div>
+      <div *ngIf="song?.year_display"><strong>Year:</strong> {{ song.year_display }}</div>
     </div>
 
     <!-- Song Map -->
@@ -60,8 +94,7 @@
         class="select"
         [(ngModel)]="displayKey"
         (ngModelChange)="onKeyChange($event)"
-        aria-label="Choose display key"
-      >
+        aria-label="Choose display key">
         <option *ngFor="let k of keys" [ngValue]="k">{{ k }}</option>
       </select>
 
@@ -164,7 +197,7 @@
     </div>
   </div>
 
-  <!-- Delete Confirmation Modal (only opens when user clicks Delete) -->
+  <!-- Delete Confirmation Modal -->
   <div class="modal-backdrop" *ngIf="isDeleteOpen" (click)="isDeleteOpen = false">
     <div class="modal" (click)="$event.stopPropagation()">
       <h3>Delete “{{ song?.title }}”?</h3>

@@ -48,28 +48,53 @@
       <!-- Song List -->
       <div class="song-list">
         <div class="song-row" *ngFor="let song of songs; trackBy: trackById">
-          <div class="thumb" aria-hidden="true"></div>
+          <div class="thumb" aria-hidden="true">
+            <img *ngIf="song.cover_image_display" [src]="song.cover_image_display" alt="cover" />
+
+          </div>
           <div class="song-meta">
             <a [routerLink]="['/songs', song.id]" class="song-title">
               {{ song.title }}
             </a>
-            <p class="song-writers muted">
-              ({{ song.writers || 'Unknown Writers' }})
+
+            <!-- Authors -->
+            <p class="song-authors muted">
+              Authors: {{ song.authors_display || 'Unknown Authors' }}
             </p>
-            <p class="song-artist">
-              {{ song.artist || 'Unknown Artist' }}
-              <span class="muted"> - {{ song.album || 'Unknown Album' }}</span>
+
+            <!-- Artist (only if present) -->
+            <p class="song-artist muted" *ngIf="song.artist_display">
+              Artist: {{ song.artist_display }}
+            </p>
+
+            <!-- Album (only if present) -->
+            <p class="song-album muted" *ngIf="song.album_display">
+              Album: {{ song.album_display }}
+            </p>
+
+            <!-- Genre -->
+            <p class="song-genre muted" *ngIf="song.genre_display">
+              Genre: {{ song.genre_display }}
+            </p>
+
+            <!-- Year -->
+            <p class="song-year muted" *ngIf="song.year_display">
+              Year: {{ song.year_display }}
             </p>
           </div>
+
           <div class="song-actions">
-            <span class="song-duration muted">{{ song.duration || '--:--' }}</span>
-            <button class="btn btn-ghost btn-small" (click)="openAddToSetlist(song)">➕ Add To Setlist</button>
+            <span class="song-duration muted">{{ song.duration_display || '--:--' }}</span>
+            <button class="btn btn-ghost btn-small" (click)="openAddToSetlist(song)">
+              ➕ Add To Setlist
+            </button>
           </div>
         </div>
 
         <!-- Empty state -->
         <div class="empty muted" *ngIf="songs?.length === 0">
-          No songs match your search. Try a different term or <a [routerLink]="['/songs','new']">add a new song</a>.
+          No songs match your search. Try a different term or
+          <a [routerLink]="['/songs','new']">add a new song</a>.
         </div>
       </div>
 

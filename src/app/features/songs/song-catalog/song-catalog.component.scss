@@ -321,3 +321,101 @@ html, body { overflow-x: hidden; }
     max-width: 100%;
   }
 }
+
+/* === Additions for Cover Art & Metadata === */
+
+/* Thumbnail / Cover Art box */
+.thumb {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  margin-right: 1rem;
+  background: #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Make the <img> fill the box */
+.cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Ensure song row flexes correctly */
+.song-row {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Meta info block */
+.song-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Title hover effect */
+.song-title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  color: #222;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* New metadata lines */
+.song-album,
+.song-genre,
+.song-year {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+/* === Additions for Cover Art & Metadata (safe append) === */
+
+/* Thumbnail / Cover Art box */
+.song-row .thumb {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  margin-right: 1rem;
+  background: #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.song-row .thumb img.cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Extra metadata lines */
+.song-meta .song-album,
+.song-meta .song-genre,
+.song-meta .song-year {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+/* Slight hover polish on title */
+.song-meta .song-title:hover {
+  text-decoration: underline;
+}

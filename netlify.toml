@@ -6,7 +6,10 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
-  external_node_modules = ["@aws-sdk/client-s3","@aws-sdk/s3-request-presigner"]
+  external_node_modules = ["@aws-sdk/client-s3","@aws-sdk/s3-request-presigner","music-metadata","node-fetch"]
+
+[build.environment]
+  NODE_VERSION = "18"
 
 # Redirect all routes to index.html (Angular handles routing client-side)
 [[redirects]]
