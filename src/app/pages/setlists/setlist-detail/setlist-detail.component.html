@@ -1,20 +1,30 @@
 <section class="section section-light setlist-detail">
   <div class="container">
+    <!-- 🔄 Loading and error states -->
     <ng-container *ngIf="loading">Loading…</ng-container>
-    <ng-container *ngIf="!loading && errorMsg"><p class="error">{{ errorMsg }}</p></ng-container>
+    <ng-container *ngIf="!loading && errorMsg">
+      <p class="error">{{ errorMsg }}</p>
+    </ng-container>
 
+    <!-- ✅ Setlist content -->
     <ng-container *ngIf="!loading && setlist">
       <div class="header-row">
         <button class="btn btn-ghost" (click)="goBack()">← Back</button>
 
         <div class="title-actions">
-          <ng-container *ngIf="!editingName; else editMode">
+          <ng-container *ngIf="!editingName; else editNameTpl">
             <h1>{{ setlist.name }}</h1>
-            <button class="btn btn-ghost btn-small" (click)="editingName = true">✏️ Edit Setlist Name</button>
+            <button class="btn btn-ghost btn-small" (click)="editingName = true">
+              ✏️ Edit Setlist Name
+            </button>
           </ng-container>
-          <ng-template #editMode>
-            <input [(ngModel)]="newName" class="input" />
-            <button class="btn btn-primary btn-small" (click)="saveName()">Save</button>
+
+          <ng-template #editNameTpl>
+            <div class="edit-box">
+              <input [(ngModel)]="newName" class="input" placeholder="Enter setlist name" />
+              <button class="btn btn-primary btn-small" (click)="saveName()">Save</button>
+              <button class="btn btn-ghost btn-small" (click)="editingName = false">Cancel</button>
+            </div>
           </ng-template>
         </div>
 
@@ -26,20 +36,33 @@
 
       <p class="muted">Total: {{ songs.length }} songs</p>
 
+      <!-- 🎶 Song list -->
       <div *ngIf="songs.length > 0; else noSongs">
-        <ul class="song-list">
+        <ul class="song-list" [@listAnim]="songs.length">
           <li
             *ngFor="let song of songs; let i = index; trackBy: trackBySetlistSongId"
             class="song-row"
           >
             <div class="song-info">
-              <!-- show UI order to avoid any stale DB position weirdness -->
               <strong>#{{ i + 1 }}</strong> — {{ song.title }}
               <span class="muted">({{ song.artist || 'Unknown Artist' }})</span>
             </div>
+
             <div class="song-actions">
-              <button class="btn btn-ghost btn-small" (click)="moveSong(song.setlistSongId, 'up')">⬆</button>
-              <button class="btn btn-ghost btn-small" (click)="moveSong(song.setlistSongId, 'down')">⬇</button>
+              <button
+                class="btn btn-ghost btn-small"
+                (click)="moveSong(song.setlistSongId, 'up')"
+                title="Move Up"
+              >
+                ⬆
+              </button>
+              <button
+                class="btn btn-ghost btn-small"
+                (click)="moveSong(song.setlistSongId, 'down')"
+                title="Move Down"
+              >
+                ⬇
+              </button>
               <button
                 class="btn btn-ghost btn-small"
                 (click)="removeSong(song.setlistSongId)"
@@ -56,6 +79,43 @@
         <p class="muted">No songs in this setlist yet.</p>
       </ng-template>
 
+      <!-- 📝 Notes section -->
+      <div class="notes-section" [@fade]>
+        <h2>Leader Notes</h2>
+
+        <!-- View mode -->
+        <ng-container *ngIf="!editingNotes; else editNotesTpl">
+          <ng-container *ngIf="newNotes?.trim(); else noNotes">
+            <!-- ✅ Shows Markdown preview immediately -->
+            <markdown [data]="newNotes"></markdown>
+          </ng-container>
+
+          <ng-template #noNotes>
+            <p class="muted">No notes yet. Add reflections or messages here.</p>
+          </ng-template>
+
+          <button class="btn btn-ghost btn-small" (click)="startEditingNotes()">✏️ Edit Notes</button>
+        </ng-container>
+
+        <!-- Edit mode -->
+        <ng-template #editNotesTpl>
+          <textarea
+            [(ngModel)]="newNotes"
+            (ngModelChange)="onNoteInput()"
+            rows="8"
+            class="textarea"
+            placeholder="Write thoughts, messages, or reflections here..."
+          ></textarea>
+
+          <div class="edit-box">
+            <button class="btn btn-primary btn-small" (click)="saveNotes()">💾 Save Now</button>
+            <button class="btn btn-ghost btn-small" (click)="cancelEditingNotes()">Cancel</button>
+            <span class="muted auto-msg">💡 Auto-saves after you stop typing.</span>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- ✅ Feedback messages -->
       <p class="success" *ngIf="successMsg">{{ successMsg }}</p>
     </ng-container>
   </div>

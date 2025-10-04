@@ -19,6 +19,9 @@ export class SetlistListComponent implements OnInit {
   creating = false;
   errorMsg: string | null = null;
 
+  songSearch = '';
+  searchTimeout: any;
+
   async ngOnInit() {
     await this.fetchSetlists();
   }
@@ -27,7 +30,12 @@ export class SetlistListComponent implements OnInit {
     this.loading = true;
     const { data, error } = await supabase
       .from('setlists')
-      .select('id, name, created_at')
+      .select(`
+        id,
+        name,
+        created_at,
+        songs:setlist_songs(song_id, songs(title))
+      `)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -37,6 +45,52 @@ export class SetlistListComponent implements OnInit {
       this.setlists = data || [];
     }
     this.loading = false;
+  }
+
+  async fetchSetlistsBySong(songName: string) {
+    if (!songName.trim()) {
+      return await this.fetchSetlists();
+    }
+
+    this.loading = true;
+
+    const { data, error } = await supabase
+      .from('setlists')
+      .select(`
+        id,
+        name,
+        created_at,
+        songs:setlist_songs(song_id, songs(title))
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('❌ Error fetching by song:', error);
+      this.errorMsg = 'Failed to search by song.';
+      this.setlists = [];
+    } else {
+      // Filter by matching song name
+      this.setlists = (data || []).filter((s: any) =>
+        s.songs?.some(
+          (x: any) =>
+            x.songs?.title?.toLowerCase().includes(songName.toLowerCase())
+        )
+      );
+    }
+
+    this.loading = false;
+  }
+
+  async onSongSearchChange() {
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      this.fetchSetlistsBySong(this.songSearch);
+    }, 400);
+  }
+
+  clearSearch() {
+    this.songSearch = '';
+    this.fetchSetlists();
   }
 
   async createSetlist() {

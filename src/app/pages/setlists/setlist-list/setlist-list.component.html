@@ -17,18 +17,48 @@
       </button>
     </div>
 
-    <p class="muted" *ngIf="errorMsg">{{ errorMsg }}</p>
-
-    <!-- List of setlists -->
-    <div *ngIf="loading">Loading…</div>
-    <div *ngIf="!loading && setlists.length === 0">
-      <p class="muted">No setlists yet.</p>
+    <!-- Search for setlists by song -->
+    <div class="search-bar">
+      <input
+        type="text"
+        [(ngModel)]="songSearch"
+        placeholder="Search setlists by song name..."
+        class="input"
+        (input)="onSongSearchChange()"
+      />
+      <button class="btn btn-ghost" (click)="clearSearch()" *ngIf="songSearch">
+        ✖ Clear
+      </button>
     </div>
 
-    <div class="setlist-grid" *ngIf="setlists.length > 0">
+    <p class="muted" *ngIf="errorMsg">{{ errorMsg }}</p>
+
+    <!-- Loading & empty states -->
+    <div *ngIf="loading">Loading…</div>
+    <div *ngIf="!loading && setlists.length === 0">
+      <p class="muted">
+        {{ songSearch ? 'No setlists contain that song.' : 'No setlists yet.' }}
+      </p>
+    </div>
+
+    <!-- Setlist results -->
+    <div class="setlist-grid" *ngIf="!loading && setlists.length > 0">
       <div class="setlist-card" *ngFor="let s of setlists">
         <h3><a [routerLink]="['/setlists', s.id]">{{ s.name }}</a></h3>
-        <p class="muted">Created: {{ s.created_at | date:'mediumDate' }}</p>
+
+        <div *ngIf="s.songs && s.songs.length > 0; else noSongs">
+          <ul>
+            <li *ngFor="let song of s.songs.slice(0, 3)">
+              {{ song.songs?.title }}
+            </li>
+            <li *ngIf="s.songs.length > 3" class="muted">
+              +{{ s.songs.length - 3 }} more…
+            </li>
+          </ul>
+        </div>
+        <ng-template #noSongs>
+          <p class="muted">No songs added yet.</p>
+        </ng-template>
       </div>
     </div>
   </div>

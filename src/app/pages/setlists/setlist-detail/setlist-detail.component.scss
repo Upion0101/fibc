@@ -10,6 +10,8 @@
       flex: 1;
       text-align: center;
       color: var(--primary);
+      font-weight: 600;
+      letter-spacing: 0.5px;
     }
 
     .actions {
@@ -20,14 +22,22 @@
 
   .edit-box {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
     margin-bottom: 1rem;
+
+    .auto-msg {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-style: italic;
+      margin-left: 0.5rem;
+    }
   }
 
   .song-list {
     list-style: none;
-    padding: 0;
     margin: 0;
+    padding: 0;
     position: relative;
   }
 
@@ -41,8 +51,13 @@
     box-shadow: var(--shadow);
     margin-bottom: 0.75rem;
 
-    /* ✨ Smooth movement */
-    transition: transform 0.25s ease, opacity 0.25s ease;
+    /* ✨ Smooth movement for FLIP & Angular animations */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+    }
 
     .song-info {
       flex: 1;
@@ -67,6 +82,11 @@
 
       button {
         white-space: nowrap;
+        transition: background 0.2s ease;
+      }
+
+      button:hover {
+        background: #f3f4f6;
       }
     }
   }
@@ -88,10 +108,124 @@
   .success {
     color: #0a7a28;
     margin-top: 0.5rem;
+    font-weight: 500;
   }
 
   .error {
     color: #b91c1c;
     margin-top: 0.5rem;
+    font-weight: 500;
+  }
+}
+
+/* ────────────────────────────────
+   📝 Notes Section
+────────────────────────────────── */
+.notes-section {
+  margin-top: 2rem;
+  padding: 1.25rem 1.5rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: background 0.3s ease;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+
+  h2 {
+    margin-bottom: 0.75rem;
+    color: var(--primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .textarea {
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: var(--radius);
+    resize: vertical;
+    background: #fff;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+  }
+
+  .edit-box {
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* 📖 Verse Toolbar */
+  .verse-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+
+    button {
+      font-size: 0.85rem;
+      background: #eef2ff;
+      color: var(--primary);
+      border-radius: var(--radius);
+      padding: 0.3rem 0.6rem;
+      transition: background 0.2s ease, transform 0.1s ease;
+
+      &:hover {
+        background: #e0e7ff;
+        transform: translateY(-1px);
+      }
+    }
+  }
+
+  /* 📘 Markdown Preview */
+  markdown {
+    display: block;
+    background: #fff;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius);
+    box-shadow: inset 0 0 0 1px #e5e7eb;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    color: #1f2937;
+
+    h1, h2, h3 {
+      color: var(--primary);
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    blockquote {
+      margin: 0.75rem 0;
+      padding-left: 1rem;
+      border-left: 4px solid var(--primary);
+      color: #374151;
+      font-style: italic;
+    }
+
+    strong {
+      color: var(--primary);
+    }
+
+    p {
+      margin: 0.5rem 0;
+    }
+  }
+
+  p.muted {
+    color: var(--muted);
+    font-style: italic;
   }
 }
