@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
+import { supabase } from '../../../../../supabaseClient';
+
 
 type UiEvent = {
   id: string;
@@ -119,21 +121,30 @@ export class CalendarComponent {
   }
 
   async deleteEvent(id: string) {
-    if (!confirm('Remove this event?')) return;
-    try {
-      const res = await fetch('/.netlify/functions/calendar-sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', id })
-      });
-      if (!res.ok) throw new Error(`Delete failed (${res.status})`);
-      this.events = this.events.filter(e => e.id !== id);
-      // No need to rebuild embed URL unless you want to force a visual refresh; the embed will refresh on its own.
-    } catch (err) {
-      console.error(err);
-      alert('Failed to delete event.');
-    }
+  if (!confirm('Remove this event?')) return;
+
+  try {
+    // 1️⃣ Delete from Google Calendar
+    const res = await fetch('/.netlify/functions/calendar-sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', id })
+    });
+    if (!res.ok) throw new Error(`Google delete failed (${res.status})`);
+
+    // 2️⃣ Delete from Supabase by google_event_id (not UUID)
+    const { error } = await supabase.from('events').delete().eq('google_event_id', id);
+    if (error) throw error;
+
+    // 3️⃣ Remove locally
+    this.events = this.events.filter(e => e.id !== id);
+    console.log(`✅ Event ${id} deleted from Google & Supabase`);
+  } catch (err) {
+    console.error('❌ Failed to delete event:', err);
+    alert('Failed to delete event.');
   }
+}
+
 
   createEvent() {
     this.router.navigate(['/calendar/new']);

@@ -1,3 +1,164 @@
+/* === Layout === */
+.dashboard-wrapper {
+  background: linear-gradient(to bottom right, #f9fafb, #eef2ff);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  animation: fadeIn 0.4s ease-out;
+
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+}
+
+/* === Welcome Header === */
+.welcome {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: var(--text, #111827);
+  }
+
+  .muted {
+    color: #6b7280;
+  }
+}
+
+/* === Quick Stats === */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+
+  .stat-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: var(--radius, 0.75rem);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-icon {
+      font-size: 1.8rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-count {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary, #2563eb);
+      min-height: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+  }
+}
+
+/* === Skeleton Loader === */
+.skeleton {
+  display: inline-block;
+  width: 40px;
+  height: 1.2rem;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 37%, #e5e7eb 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+  vertical-align: middle;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+
+/* === Fade-in effect for counts === */
+.fade-in {
+  animation: fadeCount 0.5s ease-out;
+}
+
+@keyframes fadeCount {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* === Next Event === */
+.next-event {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-left: 5px solid var(--primary, #2563eb);
+  border-radius: var(--radius, 0.75rem);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  margin-bottom: 2.5rem;
+  text-align: center;
+  animation: fadeUp 0.4s ease-out;
+
+  &.loading {
+    text-align: center;
+    color: #9ca3af;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    color: var(--primary, #2563eb);
+    margin-bottom: 0.5rem;
+  }
+
+  .event-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .event-date {
+    color: #6b7280;
+    margin-bottom: 1rem;
+  }
+
+  .btn {
+    font-size: 0.9rem;
+    padding: 0.45rem 1.2rem;
+    border-radius: 0.5rem;
+  }
+}
+
+.next-event.empty {
+  border-left-color: #9ca3af; /* gray tone instead of blue */
+  background: #f9fafb;
+  color: #6b7280;
+
+  h2 {
+    color: #374151;
+  }
+
+  .muted {
+    color: #6b7280;
+  }
+
+  .btn-accent {
+    background: var(--secondary, #6366f1);
+    color: #fff;
+  }
+}
+
+
+/* === Card Grid (existing) === */
 .dashboard {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -12,10 +173,12 @@
   padding: 2rem 1.5rem;
   text-align: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #e5e7eb;
 
   .icon {
     font-size: 2.5rem;
     margin-bottom: 1rem;
+    color: var(--primary, #2563eb);
   }
 
   h3 {
@@ -37,6 +200,32 @@
 
   &:hover {
     transform: translateY(-6px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* === Animations === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Responsive === */
+@media (max-width: 640px) {
+  .welcome h1 {
+    font-size: 1.4rem;
+  }
+
+  .next-event {
+    padding: 1rem;
+  }
+
+  .card {
+    padding: 1.5rem 1rem;
   }
 }

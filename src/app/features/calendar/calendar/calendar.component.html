@@ -1,14 +1,37 @@
 <section class="section">
   <div class="container calendar">
 
+    <!-- ===== Header ===== -->
     <div class="header-row">
       <h1>📅 Church Calendar</h1>
       <div class="actions">
-        <button class="btn btn-primary" (click)="createEvent()">+ New Event</button>
+        <button class="btn btn-primary" (click)="createEvent()">➕ New Event</button>
       </div>
     </div>
 
-    <!-- ======= Embedded Google Calendar (real UI) ======= -->
+    <!-- ===== Subscribe Section (moved to top) ===== -->
+    <div class="subscribe-section-top" *ngIf="!loading">
+      <p class="muted">
+        📲 Want to see events directly in your own Google Calendar?
+      </p>
+      <a
+        href="https://calendar.google.com/calendar/u/0?cid={{ encodeSubscribeCid(calendarId) }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-secondary">
+        ➕ Subscribe to Worship Team Calendar
+      </a>
+    </div>
+
+    <!-- ===== Next Event Highlight ===== -->
+    <div *ngIf="events.length" class="next-event">
+      <strong>Next:</strong>
+      {{ events[0].name }} –
+      <span>{{ events[0].event_date | date:'EEE, MMM d' }}</span>
+      <span *ngIf="events[0].start_time"> at {{ events[0].start_time }}</span>
+    </div>
+
+    <!-- ===== Embedded Google Calendar ===== -->
     <div class="gc-wrap" *ngIf="embedUrl">
       <iframe
         class="gc-iframe"
@@ -19,24 +42,31 @@
       </iframe>
     </div>
 
-    <!-- ======= Existing List View (kept) ======= -->
-    <h2 class="subheading">Upcoming Events</h2>
+    <!-- ===== Event List ===== -->
+    <h2 class="subheading">🕓 Upcoming Events</h2>
 
     <div *ngIf="loading" class="muted">Loading events…</div>
     <div *ngIf="!loading && !events.length" class="muted">No events found</div>
 
     <ul class="event-list" *ngIf="!loading && events.length">
-      <li *ngFor="let e of events" class="event-row">
-        <div class="event-info" (click)="openEvent(e.id)">
-          <div class="event-date">{{ e.event_date | date:'fullDate' }}</div>
-          <div class="event-time">{{ e.start_time || '—' }} - {{ e.end_time || '—' }}</div>
+      <li *ngFor="let e of events" class="event-row" (click)="openEvent(e.id)">
+        <div class="event-date">
+          <strong>{{ e.event_date | date:'EEE' }}</strong>
+          <div>{{ e.event_date | date:'MMM d' }}</div>
+        </div>
+
+        <div class="event-info">
           <div class="event-name">
             {{ e.name }}
             <span *ngIf="e.google_event_id" class="synced-label">☁ Synced</span>
           </div>
-          <div class="event-type">{{ e.type || 'General' }}</div>
+          <div class="event-meta">
+            {{ e.start_time || '—' }}–{{ e.end_time || '—' }} ·
+            <span class="type">{{ e.type || 'General' }}</span>
+          </div>
           <div class="event-notes">{{ e.notes || 'No notes' }}</div>
         </div>
+
         <button
           class="btn btn-small btn-ghost"
           (click)="deleteEvent(e.id); $event.stopPropagation()">
@@ -44,18 +74,6 @@
         </button>
       </li>
     </ul>
-
-    <!-- Public subscribe helper -->
-    <div class="subscribe-section" *ngIf="!loading">
-      <p class="muted">Want to see events directly in your Google Calendar?</p>
-      <a
-        href="https://calendar.google.com/calendar/u/0?cid={{ encodeSubscribeCid(calendarId) }}"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="btn btn-secondary">
-        ➕ Subscribe to Worship Team Calendar
-      </a>
-    </div>
 
   </div>
 </section>

@@ -1,18 +1,20 @@
 .container.calendar {
   display: grid;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
+/* ===== Header ===== */
 .header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: .75rem;
   flex-wrap: wrap;
+  gap: .75rem;
 
   h1 {
     margin: 0;
-    line-height: 1.2;
+    font-size: 1.6rem;
+    font-weight: 700;
   }
 
   .actions {
@@ -20,34 +22,58 @@
     align-items: center;
     gap: .5rem;
   }
+}
 
-  .btn-group {
-    display: inline-flex;
-    border: 1px solid var(--border, #e5e7eb);
-    border-radius: .6rem;
-    overflow: hidden;
+/* ===== Subscribe Section (Top) ===== */
+.subscribe-section-top {
+  text-align: center;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: .75rem;
+  padding: 1.25rem 1rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 
-    .btn-ghost {
-      border: 0;
-      border-radius: 0;
-    }
-    .active {
-      background: var(--muted, #f3f4f6);
-      font-weight: 600;
+  .muted {
+    color: #374151;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+  }
+
+  .btn {
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+    transition: 0.2s;
+
+    &:hover {
+      background: #1d4ed8;
+      transform: translateY(-2px);
     }
   }
 }
 
-/* Responsive Google Calendar iframe */
+/* ===== Next Event Highlight ===== */
+.next-event {
+  background: var(--primary-fade, #eff6ff);
+  border-left: 4px solid var(--primary, #2563eb);
+  border-radius: .5rem;
+  padding: .75rem 1rem;
+  font-size: 1rem;
+  color: var(--primary, #2563eb);
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* ===== Google Calendar Embed ===== */
 .gc-wrap {
   position: relative;
   width: 100%;
-  padding-bottom: 75vh; /* responsive height; tweak for your page */
+  padding-bottom: 75vh;
   background: #fff;
-  border: 1px solid var(--border, #e5e7eb);
+  border: 1px solid #e5e7eb;
   border-radius: .75rem;
   overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
 }
 
 .gc-iframe {
@@ -56,64 +82,106 @@
   width: 100%;
   height: 100%;
   border: 0;
-  background: transparent;
 }
 
-/* List view */
+/* ===== Subheading ===== */
 .subheading {
-  margin: .5rem 0 0;
-  font-size: 1.1rem;
-  color: var(--muted-fg, #6b7280);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--primary);
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: .25rem;
+  margin: 0 0 .5rem;
 }
 
+/* ===== Event List ===== */
 .event-list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: .75rem;
+  gap: 1rem;
 }
 
 .event-row {
   display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: start;
-  gap: .75rem;
-  padding: .9rem 1rem;
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: .75rem;
+  grid-template-columns: 80px 1fr auto;
+  align-items: center;
+  gap: 1rem;
   background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: .75rem;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+    cursor: pointer;
+  }
+}
+
+.event-date {
+  text-align: center;
+  color: var(--primary);
+  font-weight: 600;
+  line-height: 1.2;
+  font-size: 1rem;
+
+  div {
+    font-size: 0.9rem;
+    color: #6b7280;
+  }
 }
 
 .event-info {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: .25rem;
-  cursor: pointer;
+}
 
-  .event-name {
-    font-weight: 600;
-  }
+.event-name {
+  font-weight: 600;
+  font-size: 1rem;
 
   .synced-label {
+    background: #ecfdf5;
+    color: #059669;
     font-size: .8rem;
-    color: #2563eb;
-    margin-left: .35rem;
-  }
-
-  .event-date,
-  .event-time,
-  .event-type,
-  .event-notes {
-    color: var(--muted-fg, #6b7280);
+    border-radius: 6px;
+    padding: 0 .4rem;
+    margin-left: .4rem;
   }
 }
 
-.subscribe-section {
-  display: grid;
-  gap: .5rem;
-  margin-top: .75rem;
+.event-meta {
+  font-size: 0.9rem;
+  color: #6b7280;
+
+  .type {
+    color: var(--primary);
+    font-weight: 500;
+  }
 }
 
-.muted {
-  color: var(--muted-fg, #6b7280);
+.event-notes {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+  .event-row {
+    grid-template-columns: 1fr auto;
+    gap: .75rem;
+  }
+
+  .event-date {
+    text-align: left;
+  }
+
+  .gc-wrap {
+    padding-bottom: 65vh;
+  }
 }

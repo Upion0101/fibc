@@ -1,29 +1,88 @@
-<div class="dashboard">
-  <div class="card">
-    <div class="icon">🎶</div>
-    <h3>Songs</h3>
-    <p>Manage library of all worship songs.</p>
-    <a routerLink="/songs" class="btn btn-primary">Open</a>
-  </div>
+<section class="section dashboard-wrapper">
+  <div class="container">
 
-  <div class="card">
-    <div class="icon">📋</div>
-    <h3>Setlists</h3>
-    <p>Create and organize collections of songs.</p>
-    <a routerLink="/setlists" class="btn btn-primary">Open</a>
-  </div>
+    <!-- 👋 Welcome Header -->
+    <div class="welcome">
+      <h1>👋 Welcome back, {{ userName }}!</h1>
+      <p class="muted">
+        You’re logged in as <strong>{{ role }}</strong>.
+        Here’s your worship team dashboard:
+      </p>
+    </div>
 
-  <div class="card">
-    <div class="icon">📅</div>
-    <h3>Calendar</h3>
-    <p>Schedule services & rehearsals, assign setlists and members.</p>
-    <a routerLink="/calendar" class="btn btn-primary">Open</a>
-  </div>
+    <!-- 📊 Quick Stats -->
+    <div class="stats-grid">
+      <div class="stat-card" *ngFor="let s of stats">
+        <div class="stat-icon">{{ s.icon }}</div>
+        <div class="stat-count">
+          <ng-container *ngIf="!statsLoading && s.count !== null; else loadingCount">
+            <span class="fade-in">{{ s.count }}</span>
+          </ng-container>
+          <ng-template #loadingCount>
+            <span class="skeleton"></span>
+          </ng-template>
+        </div>
+        <div class="stat-label">{{ s.label }}</div>
+      </div>
+    </div>
 
-  <div class="card">
-    <div class="icon">👥</div>
-    <h3>Members</h3>
-    <p>View and manage worship team roster.</p>
-    <a routerLink="/members-admin" class="btn btn-primary">Open</a>
+    <!-- 📅 Next Event -->
+    <ng-container>
+      <!-- When still loading, show shimmer -->
+      <div class="next-event loading" *ngIf="eventLoading">
+        <h2>Next Event</h2>
+        <p><span class="skeleton" style="width: 60%; height: 1rem;"></span></p>
+        <p><span class="skeleton" style="width: 40%; height: 1rem;"></span></p>
+      </div>
+
+      <!-- When event found -->
+      <div class="next-event" *ngIf="!eventLoading && nextEvent">
+        <h2>Next Event</h2>
+        <p class="event-name">{{ nextEvent.name }}</p>
+        <p class="event-date">
+          {{ nextEvent.date | date:'fullDate' }} · {{ nextEvent.time }} ({{ nextEvent.type }})
+        </p>
+        <a routerLink="/calendar" class="btn btn-primary">View Calendar</a>
+      </div>
+
+      <!-- When no event found -->
+      <div class="next-event empty" *ngIf="!eventLoading && !nextEvent">
+        <h2>No Upcoming Events</h2>
+        <p class="muted">You don’t have any events scheduled yet.</p>
+        <a routerLink="/calendar" class="btn btn-accent">Open Calendar</a>
+      </div>
+    </ng-container>
+
+    <!-- 🔧 Tool Cards -->
+    <div class="dashboard">
+      <div class="card">
+        <div class="icon">🎶</div>
+        <h3>Songs</h3>
+        <p>Manage library of all worship songs.</p>
+        <a routerLink="/songs" class="btn btn-primary">Open</a>
+      </div>
+
+      <div class="card">
+        <div class="icon">📋</div>
+        <h3>Setlists</h3>
+        <p>Create and organize collections of songs.</p>
+        <a routerLink="/setlists" class="btn btn-primary">Open</a>
+      </div>
+
+      <div class="card">
+        <div class="icon">📅</div>
+        <h3>Calendar</h3>
+        <p>Schedule services & rehearsals, assign setlists and members.</p>
+        <a routerLink="/calendar" class="btn btn-primary">Open</a>
+      </div>
+
+      <div class="card">
+        <div class="icon">👥</div>
+        <h3>Members</h3>
+        <p>View and manage worship team roster.</p>
+        <a routerLink="/members-admin" class="btn btn-primary">Open</a>
+      </div>
+    </div>
+
   </div>
-</div>
+</section>

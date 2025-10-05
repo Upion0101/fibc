@@ -1,69 +1,102 @@
-<header class="site-header">
+<header class="site-header" role="banner">
   <div class="container hdr">
-    <!-- Logo / Brand -->
+
+    <!-- 🌟 Logo / Brand -->
     <a class="brand" routerLink="/" aria-label="Home">
-      <img src="/assets/images/logo.jpg" alt="FIBC Logo" class="logo" />
+      <img
+        src="/assets/images/logo.jpg"
+        alt="Filipino International Baptist Church Logo"
+        class="logo"
+      />
+      <span class="brand-name">FIBC</span>
     </a>
 
-    <!-- Desktop Nav -->
+    <!-- 🧭 Desktop Navigation -->
     <nav class="nav desktop-nav" aria-label="Main navigation">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
-      <a routerLink="/about" routerLinkActive="active">About</a>
-      <a routerLink="/history" routerLinkActive="active">History</a>
-      <a routerLink="/members" routerLinkActive="active">Members</a> <!-- ✅ always visible -->
-      <a routerLink="/contact" routerLinkActive="active">Contact</a>
-      <a routerLink="/gallery" routerLinkActive="active">Gallery</a>
-      <a class="btn btn-primary" routerLink="/visit" routerLinkActive="active">Plan a Visit</a>
-      <a class="btn btn-accent" routerLink="/donate" routerLinkActive="active">Donate</a>
 
-      <!-- 🔐 Dashboard (only if logged in) -->
-      <ng-container *ngIf="user">
-        <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-      </ng-container>
+      <!-- 🔹 Public Navigation -->
+      <div class="nav-links">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+        <a routerLink="/about" routerLinkActive="active">About</a>
+        <a routerLink="/history" routerLinkActive="active">History</a>
+        <a routerLink="/members" routerLinkActive="active">Members</a>
+        <a routerLink="/contact" routerLinkActive="active">Contact</a>
+        <a routerLink="/gallery" routerLinkActive="active">Gallery</a>
+      </div>
 
-      <!-- 🔐 Auth Section -->
+      <!-- 🔸 CTAs -->
+      <div class="nav-cta">
+        <a class="btn btn-primary" routerLink="/visit" routerLinkActive="active">Plan a Visit</a>
+        <a class="btn btn-accent" routerLink="/donate" routerLinkActive="active">Donate</a>
+      </div>
+
+      <!-- 🔐 Member Cluster -->
       <ng-container *ngIf="user; else loggedOut">
-        <div class="user-info">
-          <span class="user-name">{{ user.email }}</span>
-          <button class="btn btn-small" (click)="logout()">Logout</button>
+        <div class="member-cluster">
+          <a
+            class="btn btn-outline member-dashboard"
+            routerLink="/dashboard"
+            routerLinkActive="active"
+            aria-label="Member Dashboard"
+          >
+            <span class="icon">👤</span>
+            <span>Dashboard</span>
+            <!-- future: <span class="badge" *ngIf="hasNotifications"></span> -->
+          </a>
+
+          <div class="user-details">
+            <span class="user-greeting">
+              Welcome,
+              <strong>{{ user.user_metadata?.first_name || (user.email.split('@')[0]) }}</strong>
+            </span>
+            <button class="btn btn-small btn-dark" (click)="logout()">Logout</button>
+          </div>
         </div>
       </ng-container>
+
       <ng-template #loggedOut>
         <button class="btn btn-small" routerLink="/login">Login</button>
       </ng-template>
+
     </nav>
 
-    <!-- Hamburger (mobile) -->
-    <button class="hamburger" (click)="toggleMenu()" aria-label="Toggle menu">
+    <!-- 🍔 Mobile Hamburger -->
+   <button
+  class="hamburger"
+  (click)="toggleMenu()"
+  aria-label="Toggle menu"
+  [attr.aria-expanded]="mobileMenuOpen"
+>
       <span [class.open]="mobileMenuOpen"></span>
       <span [class.open]="mobileMenuOpen"></span>
       <span [class.open]="mobileMenuOpen"></span>
     </button>
+
   </div>
 
-  <!-- Mobile Nav -->
+  <!-- 📱 Mobile Navigation -->
   <nav class="mobile-nav" *ngIf="mobileMenuOpen" aria-label="Mobile navigation">
+    <!-- 🔹 Public Links -->
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">Home</a>
     <a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">About</a>
     <a routerLink="/history" routerLinkActive="active" (click)="closeMenu()">History</a>
-    <a routerLink="/members" routerLinkActive="active" (click)="closeMenu()">Members</a> <!-- ✅ always visible -->
+    <a routerLink="/members" routerLinkActive="active" (click)="closeMenu()">Members</a>
     <a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">Contact</a>
     <a routerLink="/gallery" routerLinkActive="active" (click)="closeMenu()">Gallery</a>
-    <a class="btn btn-primary" routerLink="/visit" routerLinkActive="active" (click)="closeMenu()">Plan a Visit</a>
-    <a class="btn btn-accent" routerLink="/donate" routerLinkActive="active" (click)="closeMenu()">Donate</a>
 
-    <!-- 🔐 Dashboard (only if logged in) -->
-    <ng-container *ngIf="user">
-      <a class="btn btn-primary" routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">Member Dashboard</a>
-    </ng-container>
+    <!-- 🔸 CTAs -->
+    <a class="btn btn-primary" routerLink="/visit" (click)="closeMenu()">Plan a Visit</a>
+    <a class="btn btn-accent" routerLink="/donate" (click)="closeMenu()">Donate</a>
 
-    <!-- 🔐 Auth Section (Mobile) -->
+    <!-- 🔐 Member Section -->
     <ng-container *ngIf="user; else mobileLoggedOut">
-      <div class="user-info">
-        <span class="user-name">{{ user.email }}</span>
-        <button class="btn btn-small" (click)="logout(); closeMenu()">Logout</button>
+      <div class="member-mobile">
+        <a class="btn btn-outline" routerLink="/dashboard" (click)="closeMenu()">Member Dashboard</a>
+        <span class="user-greeting">Welcome, {{ user.user_metadata?.first_name || (user.email.split('@')[0]) }}</span>
+        <button class="btn btn-small btn-dark" (click)="logout(); closeMenu()">Logout</button>
       </div>
     </ng-container>
+
     <ng-template #mobileLoggedOut>
       <button class="btn btn-small" routerLink="/login" (click)="closeMenu()">Login</button>
     </ng-template>

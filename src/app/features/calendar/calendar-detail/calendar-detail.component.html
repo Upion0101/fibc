@@ -32,7 +32,6 @@
         <option [ngValue]="null">— None —</option>
         <option *ngFor="let s of setlists" [ngValue]="s.id">{{ s.name }}</option>
       </select>
-      <a routerLink="/setlists" class="small-link">➕ Create new setlist</a>
 
       <label class="field-label">Notes</label>
       <textarea class="input" rows="3" [(ngModel)]="event.notes" name="notes"></textarea>

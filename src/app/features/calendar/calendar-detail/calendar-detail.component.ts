@@ -15,12 +15,20 @@ type SongSummary = { id: string; title: string; authors?: any };
   styleUrls: ['./calendar-detail.component.scss']
 })
 export class CalendarDetailComponent implements OnInit {
+  /** Helper: get next Sunday in YYYY-MM-DD format */
+  private getNextSunday(): string {
+    const d = new Date();
+    const daysUntilSunday = (7 - d.getDay()) % 7 || 7; // ensures next week's Sunday
+    d.setDate(d.getDate() + daysUntilSunday);
+    return d.toISOString().slice(0, 10);
+  }
+
   event: any = {
-    id: null,                 // DB uuid
-    name: '',
-    event_date: '',
-    start_time: '',
-    end_time: '',
+    id: null,
+    name: 'Sunday Service',
+    event_date: '',   // placeholder until initialized below
+    start_time: '12:00',
+    end_time: '15:00',
     type: 'service',
     notes: '',
     setlist_id: null,
@@ -41,6 +49,9 @@ export class CalendarDetailComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    // initialize default date
+    this.event.event_date = this.getNextSunday();
+
     const routeId = this.route.snapshot.paramMap.get('id');
 
     // Load dropdowns
@@ -57,7 +68,7 @@ export class CalendarDetailComponent implements OnInit {
       return;
     }
 
-    // Existing: routeId might be a DB uuid OR a Google event id
+    // Existing event route
     try {
       if (this.isUuid(routeId)) {
         await this.loadByDbId(routeId);
@@ -68,7 +79,7 @@ export class CalendarDetailComponent implements OnInit {
           this.isNew = false;
         } else {
           await this.prefillFromGoogle(routeId);
-          this.isNew = true; // no DB row yet
+          this.isNew = true;
         }
       }
     } catch (err: any) {
@@ -158,7 +169,6 @@ export class CalendarDetailComponent implements OnInit {
     }
   }
 
-  /** Load setlist name and songs (title/authors) robustly with 2 queries */
   private async getSetlistSummary(setlistId: string | null): Promise<{ name: string | null; songs: SongSummary[] }> {
     if (!setlistId) return { name: null, songs: [] };
 
@@ -211,35 +221,29 @@ export class CalendarDetailComponent implements OnInit {
     }
     this.errorMsg = null;
 
-    // Compose members list
     const membersList = this.members
       .filter(m => this.assignedMemberIds.includes(m.id))
       .map(m => m.name)
       .join(', ');
 
-    // Fetch setlist details if any
     const setlistId = this.event.setlist_id || null;
     const setlist = await this.getSetlistSummary(setlistId);
 
-    // Build songs text (Title — Authors)
     const songsText = setlist.songs.length
       ? setlist.songs.map(s => `• ${s.title}${this.authorsToString(s.authors) ? ' — ' + this.authorsToString(s.authors) : ''}`).join('\n')
       : '';
 
-    // Build website links
     const origin = (typeof window !== 'undefined' && window.location?.origin) ? window.location.origin : '';
     const setlistUrl = setlistId ? `${origin}/setlists/${setlistId}` : null;
     const eventUrl = this.event.id ? `${origin}/calendar/${this.event.id}` : null;
 
     try {
-      // 1) Sync with Google (create/update chosen by google_event_id presence)
       const googleAction = this.event.google_event_id ? 'update' : 'create';
       const gRes: any = await this.http.post('/.netlify/functions/calendar-sync', {
         action: googleAction,
         calendarEvent: {
           ...this.event,
           members: membersList,
-          // NEW: richer info
           setlist_name: setlist.name,
           songs: setlist.songs.map(s => ({ id: s.id, title: s.title, authors: this.authorsToString(s.authors) })),
           links: {
@@ -252,7 +256,6 @@ export class CalendarDetailComponent implements OnInit {
 
       const googleId = gRes?.id || this.event.google_event_id || null;
 
-      // 2) Upsert in Supabase (insert if new, update if existing)
       const dbPayload = {
         name: this.event.name?.trim() || null,
         event_date: this.event.event_date || null,
@@ -277,14 +280,12 @@ export class CalendarDetailComponent implements OnInit {
         this.event = { ...this.event, ...upd.data };
       }
 
-      // 3) Update event_members
       if (dbId) {
         await supabase.from('event_members').delete().eq('event_id', dbId);
         const rows = this.assignedMemberIds.map(mid => ({ event_id: dbId, member_id: mid }));
         if (rows.length) await supabase.from('event_members').insert(rows);
       }
 
-      // Ensure google_event_id persisted if we just created on Google
       if (googleAction === 'create' && googleId && dbId) {
         await supabase.from('events').update({ google_event_id: googleId }).eq('id', dbId);
         this.event.google_event_id = googleId;
