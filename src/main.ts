@@ -9,15 +9,16 @@ import { provideHttpClient } from '@angular/common/http';
 bootstrapApplication(AppComponent, {
   ...appConfig,
   providers: [
+    // Keep existing appConfig providers
     ...(appConfig.providers || []),
 
-    // ✅ Enable Angular animations
+    // ✅ Enable Angular animations globally (for @fadeUp, @fadeInHero, etc.)
     provideAnimations(),
 
-    // ✅ Provide HttpClient (required by MarkdownModule)
+    // ✅ Provide HttpClient (required for MarkdownModule & HTTP requests)
     provideHttpClient(),
 
-    // ✅ Register MarkdownModule globally (fixes _MarkdownService error)
+    // ✅ Import MarkdownModule properly using importProvidersFrom
     importProvidersFrom(MarkdownModule.forRoot())
   ]
-}).catch(err => console.error(err));
+}).catch((err) => console.error(err));

@@ -190,33 +190,67 @@ export class SetlistDetailComponent implements OnInit, OnDestroy {
   }
 
   async moveSong(setlistSongId: string, direction: 'up' | 'down') {
-    const index = this.songs.findIndex((s) => s.setlistSongId === setlistSongId);
-    if (index === -1) return;
-    const neighborIndex = direction === 'up' ? index - 1 : index + 1;
-    if (neighborIndex < 0 || neighborIndex >= this.songs.length) return;
+  const index = this.songs.findIndex((s) => s.setlistSongId === setlistSongId);
+  if (index === -1) return;
 
-    const list = document.querySelectorAll<HTMLElement>('.song-row');
-    const firstRects = Array.from(list).map((el) => el.getBoundingClientRect());
+  const neighborIndex = direction === 'up' ? index - 1 : index + 1;
+  if (neighborIndex < 0 || neighborIndex >= this.songs.length) return;
 
-    [this.songs[index], this.songs[neighborIndex]] = [
-      this.songs[neighborIndex],
-      this.songs[index],
-    ];
-    await new Promise((r) => setTimeout(r));
-    const lastRects = Array.from(list).map((el) => el.getBoundingClientRect());
-    list.forEach((el, i) => {
-      const dx = firstRects[i].left - lastRects[i].left;
-      const dy = firstRects[i].top - lastRects[i].top;
-      if (dx || dy) {
-        el.style.transform = `translate(${dx}px, ${dy}px)`;
-        el.style.transition = 'none';
-        requestAnimationFrame(() => {
-          el.style.transform = '';
-          el.style.transition = 'transform 300ms ease';
-        });
-      }
-    });
+  // 🎬 Capture pre-move positions
+  const list = document.querySelectorAll<HTMLElement>('.song-row');
+  const firstRects = Array.from(list).map((el) => el.getBoundingClientRect());
+
+  // 🧩 Swap in-memory
+  [this.songs[index], this.songs[neighborIndex]] = [
+    this.songs[neighborIndex],
+    this.songs[index],
+  ];
+
+  // ✅ Trigger re-render but wait a frame before measuring again
+  this.cdr.detectChanges();
+  await new Promise((r) => setTimeout(r));
+
+  // 🎥 Capture post-move positions
+  const lastRects = Array.from(list).map((el) => el.getBoundingClientRect());
+
+  // 🪄 Apply FLIP animation (First–Last–Invert–Play)
+  list.forEach((el, i) => {
+    const dx = firstRects[i].left - lastRects[i].left;
+    const dy = firstRects[i].top - lastRects[i].top;
+    if (dx || dy) {
+      el.style.transform = `translate(${dx}px, ${dy}px)`;
+      el.style.transition = 'none';
+      requestAnimationFrame(() => {
+        el.style.transform = '';
+        el.style.transition = 'transform 300ms ease';
+      });
+    }
+  });
+
+  // 🔢 Update local positions
+  this.songs.forEach((s, i) => (s.position = i + 1));
+
+  // 💾 Save to Supabase (after animation starts)
+  try {
+    console.log('🟡 Saving new song order...');
+    const updates = this.songs.map((s) => ({
+      id: s.setlistSongId,
+      position: s.position,
+    }));
+
+    const { data, error } = await supabase
+      .from('setlist_songs')
+      .upsert(updates, { onConflict: 'id' });
+
+    if (error) throw error;
+    console.log('🟢 Order saved successfully!');
+    this.successMsg = '✅ Song order saved!';
+  } catch (err: any) {
+    console.error('❌ Supabase reorder error:', err);
+    this.errorMsg = err.message || 'Failed to reorder songs.';
   }
+}
+
 
   async saveName() {
     const name = this.newName.trim();
