@@ -9,25 +9,72 @@
       </div>
     </div>
 
-    <!-- ===== Subscribe Section (moved to top) ===== -->
+    <!-- ===== Subscribe Section (Three Separate Buttons with SVG icons) ===== -->
     <div class="subscribe-section-top" *ngIf="!loading">
-      <p class="muted">
-        📲 Want to see events directly in your own Google Calendar?
-      </p>
-      <a
-        href="https://calendar.google.com/calendar/u/0?cid={{ encodeSubscribeCid(calendarId) }}"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="btn btn-secondary">
-        ➕ Subscribe to Worship Team Calendar
-      </a>
+      <p class="muted">📲 Stay updated — add our calendar to your favorite app!</p>
+
+      <div class="subscribe-buttons">
+
+        <!-- Google Calendar -->
+        <a
+          [href]="'https://calendar.google.com/calendar/u/0?cid=' + encodeSubscribeCid(calendarId)"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-secondary"
+        >
+          <img src="assets/images/google-icon.svg" alt="Google Calendar" class="icon" />
+          Add to Google Calendar
+        </a>
+
+        <!-- Outlook -->
+        <button class="btn btn-outline outlook-btn" (click)="showSubscribeModal = true">
+          <img src="assets/images/ms-outlook-logo.svg" alt="Outlook Calendar" class="icon" />
+          Subscribe in Outlook
+        </button>
+
+        <!-- Apple Calendar -->
+        <button class="btn btn-outline apple-btn" (click)="openAppleSubscribe()">
+          <img src="assets/images/apple-logo.svg" alt="Apple Calendar" class="icon" />
+          Subscribe in Apple Calendar
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== Modal Popup (for Outlook users) ===== -->
+    <div class="subscribe-modal" *ngIf="showSubscribeModal">
+      <div class="modal-overlay" (click)="showSubscribeModal = false"></div>
+
+      <div class="modal-content">
+        <h2>🪟 Subscribe to FIBC Calendar in Outlook</h2>
+        <p class="muted">
+          For live updates, make sure to use the <strong>“Subscribe from web”</strong> option.
+        </p>
+
+        <div class="copy-box">
+          <input type="text" [value]="outlookSubscribeUrl" readonly id="icsLink" />
+          <button class="btn btn-small btn-primary" (click)="copyIcsLink()">Copy Link</button>
+        </div>
+
+        <div class="instructions">
+          <h3>Steps for Outlook (Web or Desktop)</h3>
+          <ol>
+            <li>Open Outlook Calendar.</li>
+            <li>Select <strong>Add Calendar → Subscribe from web</strong>.</li>
+            <li>Paste the link above and click <strong>Import</strong>.</li>
+          </ol>
+        </div>
+
+        <button class="btn btn-ghost close-btn" (click)="showSubscribeModal = false">
+          ✖ Close
+        </button>
+      </div>
     </div>
 
     <!-- ===== Next Event Highlight ===== -->
     <div *ngIf="events.length" class="next-event">
       <strong>Next:</strong>
       {{ events[0].name }} –
-      <span>{{ events[0].event_date | date:'EEE, MMM d' }}</span>
+      <span>{{ events[0].event_date | date: 'EEE, MMM d' }}</span>
       <span *ngIf="events[0].start_time"> at {{ events[0].start_time }}</span>
     </div>
 
@@ -51,8 +98,8 @@
     <ul class="event-list" *ngIf="!loading && events.length">
       <li *ngFor="let e of events" class="event-row" (click)="openEvent(e.id)">
         <div class="event-date">
-          <strong>{{ e.event_date | date:'EEE' }}</strong>
-          <div>{{ e.event_date | date:'MMM d' }}</div>
+          <strong>{{ e.event_date | date: 'EEE' }}</strong>
+          <div>{{ e.event_date | date: 'MMM d' }}</div>
         </div>
 
         <div class="event-info">

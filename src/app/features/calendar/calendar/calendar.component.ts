@@ -4,7 +4,6 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { supabase } from '../../../../../supabaseClient';
 
-
 type UiEvent = {
   id: string;
   name: string;
@@ -24,51 +23,74 @@ type UiEvent = {
   styleUrls: ['./calendar.component.scss']
 })
 export class CalendarComponent {
-  /**
-   * MUST match the calendar you write to in the Netlify function (GOOGLE_CALENDAR_ID)
-   * Example provided by you:
-   * e5cc593264eb87e4b7a8c2533b8a47be8ae8424baa1fddee7700ed05ea3b77a2@group.calendar.google.com
-   */
-  calendarId = 'e5cc593264eb87e4b7a8c2533b8a47be8ae8424baa1fddee7700ed05ea3b77a2@group.calendar.google.com';
-
-  /** Time zone to show in embed (the working iframe you pasted used America/New_York) */
+  calendarId =
+    'e5cc593264eb87e4b7a8c2533b8a47be8ae8424baa1fddee7700ed05ea3b77a2@group.calendar.google.com';
   ctz = 'America/New_York';
-
-  /** Sanitized embed URL (built exactly like Google’s “Integrate calendar” code) */
   embedUrl: SafeResourceUrl | null = null;
 
   loading = true;
   events: UiEvent[] = [];
+  showSubscribeModal = false;
 
-  constructor(
-    private sanitizer: DomSanitizer,
-    private router: Router
-  ) {}
+  constructor(private sanitizer: DomSanitizer, private router: Router) {}
 
   ngOnInit() {
     this.setEmbedFromKnownGood();
     this.loadEvents().catch(() => {});
   }
 
-  /**
-   * Build the embed URL exactly like Google’s embed code you pasted.
-   * This avoids hitting any non-embeddable /u/0/ pages that set frame-ancestors 'self'.
-   */
   private setEmbedFromKnownGood() {
-    // src is the calendar ID, URL-encoded; ctz must be URL-encoded too
     const src = encodeURIComponent(this.calendarId);
     const ctz = encodeURIComponent(this.ctz);
-
     const raw = `https://calendar.google.com/calendar/embed?src=${src}&ctz=${ctz}`;
     this.embedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(raw);
   }
 
-  /**
-   * Helper for the “Subscribe” link (Google expects the raw CID in the url param).
-   * We still URL-encode it for safety in the template.
-   */
   encodeSubscribeCid(id: string): string {
     return encodeURIComponent(id);
+  }
+
+  /** Public iCal feed (works for both Outlook and Apple) */
+  get outlookSubscribeUrl(): string {
+    return `https://calendar.google.com/calendar/ical/${this.calendarId}/public/basic.ics`;
+  }
+
+  /** Improved Apple detection & behavior */
+  private isAppleDevice(): boolean {
+    const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
+    return /Macintosh|MacIntel|MacPPC|Mac68K|iPhone|iPad|iPod/i.test(ua);
+  }
+
+  openAppleSubscribe() {
+    const isApple = this.isAppleDevice();
+
+    if (isApple) {
+      const webcalUrl = this.outlookSubscribeUrl.replace(/^https?:\/\//, 'webcal://');
+
+      // Attempt to open Apple Calendar directly
+      try {
+        window.location.href = webcalUrl;
+
+        // In case the protocol handler is blocked, fallback after 2s
+        setTimeout(() => {
+          if (!document.hidden) {
+            alert(
+              'If the Calendar app did not open automatically, please copy the link manually and add it via Calendar → File → New Calendar Subscription.'
+            );
+          }
+        }, 2000);
+      } catch {
+        alert('Could not open Apple Calendar. Please copy the link manually.');
+      }
+    } else {
+      this.showSubscribeModal = true;
+    }
+  }
+
+  copyIcsLink() {
+    navigator.clipboard.writeText(this.outlookSubscribeUrl).then(() => {
+      alert('📋 Link copied to clipboard!');
+    });
   }
 
   async loadEvents() {
@@ -91,6 +113,7 @@ export class CalendarComponent {
           timeMax: end.toISOString()
         })
       });
+
       if (!res.ok) throw new Error(`Failed to load events (${res.status})`);
       const items = await res.json();
 
@@ -99,14 +122,20 @@ export class CalendarComponent {
         name: e.summary || '(Untitled)',
         event_date: e.start?.date || e.start?.dateTime || new Date().toISOString(),
         start_time: e.start?.dateTime
-          ? new Date(e.start.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          ? new Date(e.start.dateTime).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit'
+            })
           : null,
         end_time: e.end?.dateTime
-          ? new Date(e.end.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          ? new Date(e.end.dateTime).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit'
+            })
           : null,
         type: e.eventType || null,
         notes: e.description || null,
-        google_event_id: e.id,
+        google_event_id: e.id
       }));
     } catch (err) {
       console.error('Calendar list fetch failed', err);
@@ -121,30 +150,26 @@ export class CalendarComponent {
   }
 
   async deleteEvent(id: string) {
-  if (!confirm('Remove this event?')) return;
+    if (!confirm('Remove this event?')) return;
 
-  try {
-    // 1️⃣ Delete from Google Calendar
-    const res = await fetch('/.netlify/functions/calendar-sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'delete', id })
-    });
-    if (!res.ok) throw new Error(`Google delete failed (${res.status})`);
+    try {
+      const res = await fetch('/.netlify/functions/calendar-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', id })
+      });
+      if (!res.ok) throw new Error(`Google delete failed (${res.status})`);
 
-    // 2️⃣ Delete from Supabase by google_event_id (not UUID)
-    const { error } = await supabase.from('events').delete().eq('google_event_id', id);
-    if (error) throw error;
+      const { error } = await supabase.from('events').delete().eq('google_event_id', id);
+      if (error) throw error;
 
-    // 3️⃣ Remove locally
-    this.events = this.events.filter(e => e.id !== id);
-    console.log(`✅ Event ${id} deleted from Google & Supabase`);
-  } catch (err) {
-    console.error('❌ Failed to delete event:', err);
-    alert('Failed to delete event.');
+      this.events = this.events.filter((e) => e.id !== id);
+      console.log(`✅ Event ${id} deleted from Google & Supabase`);
+    } catch (err) {
+      console.error('❌ Failed to delete event:', err);
+      alert('Failed to delete event.');
+    }
   }
-}
-
 
   createEvent() {
     this.router.navigate(['/calendar/new']);
