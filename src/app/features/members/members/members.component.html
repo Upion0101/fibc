@@ -4,30 +4,29 @@
     <!-- ===== Header Row ===== -->
     <div class="header-row">
       <h1>👥 Members</h1>
-  
     </div>
 
     <!-- ===== Current User Profile Section ===== -->
-    <div class="current-user" *ngIf="currentUserMember">
+    <div class="current-user" *ngIf="currentUser">
       <h2>🙋 Your Profile</h2>
       <div class="profile-card">
         <div class="profile-info">
-          <strong>{{ currentUserMember.name }}</strong>
-          <p class="muted">{{ currentUserMember.email }}</p>
+          <strong>{{ currentUser.name }}</strong>
+          <p class="muted">{{ currentUser.email }}</p>
           <p
             class="role-badge"
             [ngClass]="{
-              'role-admin': currentUserMember.role === 'admin',
-              'role-member': currentUserMember.role === 'member'
+              'role-admin': currentUser.role === 'admin',
+              'role-member': currentUser.role === 'member',
+              'role-pending': currentUser.role === 'pending'
             }">
-            {{ currentUserMember.role | titlecase }}
+            {{ currentUser.role | titlecase }}
           </p>
         </div>
 
-        <!-- Allow user to edit their own profile -->
         <button
           class="btn btn-small btn-ghost"
-          (click)="editMember(currentUserMember)">
+          (click)="editUser(currentUser)">
           ✏️ Edit Profile
         </button>
       </div>
@@ -35,8 +34,33 @@
 
     <hr />
 
-    <!-- ===== Member Directory Section ===== -->
-    <div class="member-directory">
+    <!-- ===== Pending Approvals Section (Admins Only) ===== -->
+    <div *ngIf="isAdmin && pendingUsers.length" class="pending-section">
+      <h2>🕓 Pending Approvals</h2>
+      <ul class="user-list">
+        <li *ngFor="let u of pendingUsers" class="user-row">
+          <div class="user-info">
+            <strong>{{ u.name }}</strong>
+            <span class="muted">{{ u.email }}</span>
+            <span class="role-badge role-pending">Pending</span>
+          </div>
+          <div class="user-actions">
+            <button class="btn btn-success btn-small"
+                    (click)="approveUser(u)">
+              ✅ Approve
+            </button>
+            <button class="btn btn-danger btn-small"
+                    (click)="rejectUser(u.id)">
+              ❌ Reject
+            </button>
+          </div>
+        </li>
+      </ul>
+      <hr />
+    </div>
+
+    <!-- ===== User Directory Section ===== -->
+    <div class="user-directory">
       <div class="directory-header">
         <h2>📋 All Members</h2>
         <p class="muted">
@@ -45,81 +69,50 @@
       </div>
 
       <div *ngIf="loading" class="muted">Loading members…</div>
-      <div *ngIf="!loading && !members.length" class="muted">No members found</div>
+      <div *ngIf="!loading && !activeUsers.length" class="muted">No members found</div>
 
-      <ul class="member-list" *ngIf="!loading && members.length">
-        <li *ngFor="let m of members" class="member-row">
-          <div class="member-info">
-            <strong>{{ m.name }}</strong>
-            <span class="muted">{{ m.email }}</span>
+      <ul class="user-list" *ngIf="!loading && activeUsers.length">
+        <li *ngFor="let u of activeUsers" class="user-row">
+          <div class="user-info">
+            <strong>{{ u.name }}</strong>
+            <span class="muted">{{ u.email }}</span>
             <span
               class="role-badge"
               [ngClass]="{
-                'role-admin': m.role === 'admin',
-                'role-member': m.role === 'member'
+                'role-admin': u.role === 'admin',
+                'role-member': u.role === 'member'
               }">
-              {{ m.role | titlecase }}
+              {{ u.role | titlecase }}
             </span>
           </div>
 
-          <!-- ===== Admin Controls / Self Controls ===== -->
-          <div class="member-actions" *ngIf="isAdmin || m.user_id === userId">
-            <button
-              class="btn btn-ghost btn-small"
-              (click)="editMember(m)">
+          <div class="user-actions" *ngIf="isAdmin || u.id === userId">
+            <button class="btn btn-ghost btn-small" (click)="editUser(u)">
               ✏️ Edit
             </button>
 
             <!-- Admin-only Promote/Demote Controls -->
             <button
               class="btn btn-secondary btn-small"
-              *ngIf="isAdmin && m.role === 'member'"
-              (click)="changeRole(m, 'admin')">
+              *ngIf="isAdmin && u.role === 'member'"
+              (click)="changeRole(u, 'admin')">
               🔼 Promote to Admin
             </button>
 
             <button
               class="btn btn-warning btn-small"
-              *ngIf="isAdmin && m.role === 'admin' && m.user_id !== userId"
-              (click)="changeRole(m, 'member')">
+              *ngIf="isAdmin && u.role === 'admin' && u.id !== userId"
+              (click)="changeRole(u, 'member')">
               🔽 Demote to Member
             </button>
 
             <button
               class="btn btn-danger btn-small"
-              *ngIf="isAdmin && m.user_id !== userId"
-              (click)="deleteMember(m.id)">
+              *ngIf="isAdmin && u.id !== userId"
+              (click)="deleteUser(u.id)">
               🗑️ Remove
             </button>
           </div>
-
-          <!-- ===== Assigned Events Section (optional) ===== -->
-          <div class="assignments" *ngIf="m.assignments?.length; else noEvents">
-            <h4>Assigned Events:</h4>
-            <ul>
-              <li *ngFor="let e of m.assignments" class="event-item">
-                📅 {{ e.event_date | date:'fullDate' }} –
-                <strong>{{ e.name }}</strong> ({{ e.type }})
-
-                <div *ngIf="e.setlist" class="setlist-info">
-                  🎵 Setlist:
-                  <a [routerLink]="['/setlists', e.setlist.id]" class="setlist-link">
-                    {{ e.setlist.name }}
-                  </a>
-                  <ul class="songs">
-                    <li *ngFor="let s of e.setlist.setlist_songs">
-                      • {{ s.songs.title }}
-                      <span *ngIf="s.songs.artist">– {{ s.songs.artist }}</span>
-                    </li>
-                  </ul>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          <ng-template #noEvents>
-            <p class="muted">No events assigned</p>
-          </ng-template>
         </li>
       </ul>
     </div>

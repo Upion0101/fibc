@@ -4,7 +4,7 @@
     <!-- ===== Header ===== -->
     <div class="header-row">
       <h1>📅 Church Calendar</h1>
-      <div class="actions">
+      <div class="actions" *ngIf="isAdmin">
         <button class="btn btn-primary" (click)="createEvent()">➕ New Event</button>
       </div>
     </div>
@@ -14,25 +14,20 @@
       <p class="muted">📲 Stay updated — add our calendar to your favorite app!</p>
 
       <div class="subscribe-buttons">
-
-        <!-- Google Calendar -->
         <a
           [href]="'https://calendar.google.com/calendar/u/0?cid=' + encodeSubscribeCid(calendarId)"
           target="_blank"
           rel="noopener noreferrer"
-          class="btn btn-secondary"
-        >
+          class="btn btn-secondary">
           <img src="assets/images/google-icon.svg" alt="Google Calendar" class="icon" />
           Add to Google Calendar
         </a>
 
-        <!-- Outlook -->
         <button class="btn btn-outline outlook-btn" (click)="showSubscribeModal = true">
           <img src="assets/images/ms-outlook-logo.svg" alt="Outlook Calendar" class="icon" />
           Subscribe in Outlook
         </button>
 
-        <!-- Apple Calendar -->
         <button class="btn btn-outline apple-btn" (click)="openAppleSubscribe()">
           <img src="assets/images/apple-logo.svg" alt="Apple Calendar" class="icon" />
           Subscribe in Apple Calendar
@@ -96,7 +91,11 @@
     <div *ngIf="!loading && !events.length" class="muted">No events found</div>
 
     <ul class="event-list" *ngIf="!loading && events.length">
-      <li *ngFor="let e of events" class="event-row" (click)="openEvent(e.id)">
+      <li
+        *ngFor="let e of events"
+        class="event-row"
+        [class.clickable]="isAdmin"
+        (click)="isAdmin && openEvent(e.id)">
         <div class="event-date">
           <strong>{{ e.event_date | date: 'EEE' }}</strong>
           <div>{{ e.event_date | date: 'MMM d' }}</div>
@@ -115,6 +114,7 @@
         </div>
 
         <button
+          *ngIf="isAdmin"
           class="btn btn-small btn-ghost"
           (click)="deleteEvent(e.id); $event.stopPropagation()">
           🗑 Remove

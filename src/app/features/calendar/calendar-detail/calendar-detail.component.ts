@@ -18,7 +18,7 @@ export class CalendarDetailComponent implements OnInit {
   /** Helper: get next Sunday in YYYY-MM-DD format */
   private getNextSunday(): string {
     const d = new Date();
-    const daysUntilSunday = (7 - d.getDay()) % 7 || 7; // ensures next week's Sunday
+    const daysUntilSunday = (7 - d.getDay()) % 7 || 7;
     d.setDate(d.getDate() + daysUntilSunday);
     return d.toISOString().slice(0, 10);
   }
@@ -26,7 +26,7 @@ export class CalendarDetailComponent implements OnInit {
   event: any = {
     id: null,
     name: 'Sunday Service',
-    event_date: '',   // placeholder until initialized below
+    event_date: '',
     start_time: '12:00',
     end_time: '15:00',
     type: 'service',
@@ -49,35 +49,42 @@ export class CalendarDetailComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
-    // initialize default date
     this.event.event_date = this.getNextSunday();
-
     const routeId = this.route.snapshot.paramMap.get('id');
 
-    // Load dropdowns
+    // ===== Load dropdowns =====
     const { data: setlists } = await supabase.from('setlists').select('id, name');
     this.setlists = setlists || [];
 
-    const { data: members } = await supabase.from('members').select('id, name, role');
-    this.members = members || [];
+    // ✅ Load correct list of users (admins + members only)
+    const { data: users, error: userError } = await supabase
+      .from('users')
+      .select('id, name, role')
+      .in('role', ['admin', 'member'])
+      .order('name', { ascending: true });
 
-    // New event route
+    if (userError) {
+      console.error('❌ Error loading users:', userError);
+      this.members = [];
+    } else {
+      this.members = users || [];
+    }
+
+    // ===== Determine new/existing event =====
     if (!routeId || routeId === 'new') {
       this.isNew = true;
       this.loading = false;
       return;
     }
 
-    // Existing event route
     try {
       if (this.isUuid(routeId)) {
         await this.loadByDbId(routeId);
         this.isNew = false;
       } else {
         const found = await this.loadByGoogleIdFromDb(routeId);
-        if (found) {
-          this.isNew = false;
-        } else {
+        if (found) this.isNew = false;
+        else {
           await this.prefillFromGoogle(routeId);
           this.isNew = true;
         }
@@ -230,29 +237,47 @@ export class CalendarDetailComponent implements OnInit {
     const setlist = await this.getSetlistSummary(setlistId);
 
     const songsText = setlist.songs.length
-      ? setlist.songs.map(s => `• ${s.title}${this.authorsToString(s.authors) ? ' — ' + this.authorsToString(s.authors) : ''}`).join('\n')
+      ? setlist.songs
+          .map(
+            s =>
+              `• ${s.title}${
+                this.authorsToString(s.authors)
+                  ? ' — ' + this.authorsToString(s.authors)
+                  : ''
+              }`
+          )
+          .join('\n')
       : '';
 
-    const origin = (typeof window !== 'undefined' && window.location?.origin) ? window.location.origin : '';
+    const origin =
+      typeof window !== 'undefined' && window.location?.origin
+        ? window.location.origin
+        : '';
     const setlistUrl = setlistId ? `${origin}/setlists/${setlistId}` : null;
     const eventUrl = this.event.id ? `${origin}/calendar/${this.event.id}` : null;
 
     try {
       const googleAction = this.event.google_event_id ? 'update' : 'create';
-      const gRes: any = await this.http.post('/.netlify/functions/calendar-sync', {
-        action: googleAction,
-        calendarEvent: {
-          ...this.event,
-          members: membersList,
-          setlist_name: setlist.name,
-          songs: setlist.songs.map(s => ({ id: s.id, title: s.title, authors: this.authorsToString(s.authors) })),
-          links: {
-            setlist: setlistUrl,
-            event: eventUrl,
-            website: origin || null
+      const gRes: any = await this.http
+        .post('/.netlify/functions/calendar-sync', {
+          action: googleAction,
+          calendarEvent: {
+            ...this.event,
+            members: membersList,
+            setlist_name: setlist.name,
+            songs: setlist.songs.map(s => ({
+              id: s.id,
+              title: s.title,
+              authors: this.authorsToString(s.authors)
+            })),
+            links: {
+              setlist: setlistUrl,
+              event: eventUrl,
+              website: origin || null
+            }
           }
-        }
-      }).toPromise();
+        })
+        .toPromise();
 
       const googleId = gRes?.id || this.event.google_event_id || null;
 
@@ -275,10 +300,19 @@ export class CalendarDetailComponent implements OnInit {
         dbId = ins.data.id;
         this.event = { ...this.event, ...ins.data };
       } else {
-        const upd = await supabase.from('events').update(dbPayload).eq('id', dbId).select('*').single();
+        const upd = await supabase
+          .from('events')
+          .update(dbPayload)
+          .eq('id', dbId)
+          .select('*'); // ✅ changed
+
         if (upd.error) throw upd.error;
-        this.event = { ...this.event, ...upd.data };
-      }
+        if (!upd.data?.length) {
+          console.warn('⚠️ Update succeeded but no rows returned (possible RLS)');
+        } else {
+          this.event = { ...this.event, ...upd.data[0] };
+        }
+}
 
       if (dbId) {
         await supabase.from('event_members').delete().eq('event_id', dbId);
@@ -309,13 +343,15 @@ export class CalendarDetailComponent implements OnInit {
       }
 
       if (this.event.google_event_id) {
-        await this.http.post('/.netlify/functions/calendar-sync', {
-          action: 'delete',
-          id: this.event.google_event_id
-        }).toPromise();
+        await this.http
+          .post('/.netlify/functions/calendar-sync', {
+            action: 'delete',
+            id: this.event.google_event_id
+          })
+          .toPromise();
       }
 
-      console.log(`✅ Event deleted`);
+      console.log('✅ Event deleted');
       this.router.navigate(['/calendar']);
     } catch (err) {
       console.error('❌ Error deleting event:', err);

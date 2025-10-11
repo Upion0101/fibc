@@ -22,8 +22,27 @@ export class SetlistListComponent implements OnInit {
   songSearch = '';
   searchTimeout: any;
 
+  isAdmin = false; // ✅ controls create privileges
+
   async ngOnInit() {
+    await this.checkAdminRole();
     await this.fetchSetlists();
+  }
+
+  /** ✅ Check if current user is an admin */
+  private async checkAdminRole() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) return;
+
+    const { data, error: userErr } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!userErr && data?.role === 'admin') {
+      this.isAdmin = true;
+    }
   }
 
   async fetchSetlists() {
@@ -93,7 +112,13 @@ export class SetlistListComponent implements OnInit {
     this.fetchSetlists();
   }
 
+  /** ✅ Admin-only setlist creation */
   async createSetlist() {
+    if (!this.isAdmin) {
+      alert('Only admins can create setlists.');
+      return;
+    }
+
     if (!this.newSetlistName.trim()) return;
     this.creating = true;
     this.errorMsg = null;

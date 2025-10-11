@@ -16,11 +16,29 @@ export class AppComponent implements OnInit {
   user: any = null;
 
   async ngOnInit() {
-    // Get the current session on load
-    const { data } = await supabase.auth.getSession();
-    this.user = data.session?.user || null;
+    // Get session
+    const { data: { session } } = await supabase.auth.getSession();
+    this.user = session?.user || null;
 
-    // Subscribe to auth state changes
+    if (this.user) {
+      console.log('✅ Supabase user logged in:', this.user.email);
+
+      // 🔄 Force refresh to ensure JWT has latest DB role claims
+      try {
+        const { data: refreshed, error } = await supabase.auth.refreshSession();
+        if (error) console.error('Session refresh error:', error);
+        else if (refreshed?.session) {
+          this.user = refreshed.session.user;
+          console.log('🔄 Session refreshed successfully.');
+        }
+      } catch (err) {
+        console.error('Unexpected refresh error:', err);
+      }
+    } else {
+      console.log('❌ Supabase user logged out');
+    }
+
+    // Subscribe to future auth state changes
     supabase.auth.onAuthStateChange((_event, session) => {
       this.user = session?.user || null;
 

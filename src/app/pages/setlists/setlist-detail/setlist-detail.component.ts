@@ -23,21 +23,13 @@ import {
   animations: [
     trigger('listAnim', [
       transition('* <=> *', [
-        query(
-          ':enter',
-          [
-            style({ opacity: 0, transform: 'translateY(-15px)' }),
-            animate('250ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
-          ],
-          { optional: true }
-        ),
-        query(
-          ':leave',
-          [
-            animate('250ms ease-in', style({ opacity: 0, transform: 'translateY(15px)' })),
-          ],
-          { optional: true }
-        ),
+        query(':enter', [
+          style({ opacity: 0, transform: 'translateY(-15px)' }),
+          animate('250ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
+        ], { optional: true }),
+        query(':leave', [
+          animate('250ms ease-in', style({ opacity: 0, transform: 'translateY(15px)' })),
+        ], { optional: true }),
       ]),
     ]),
     trigger('fade', [
@@ -67,6 +59,8 @@ export class SetlistDetailComponent implements OnInit, OnDestroy {
   noteChanges$ = new Subject<string>();
   noteSub?: Subscription;
 
+  isAdmin = false; // ✅ determines edit privileges
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -74,6 +68,8 @@ export class SetlistDetailComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
+    await this.checkAdminRole();
+
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
       this.errorMsg = 'No setlist ID provided.';
@@ -93,6 +89,22 @@ export class SetlistDetailComponent implements OnInit, OnDestroy {
     this.noteSub?.unsubscribe();
   }
 
+  /** ✅ Determine if current user is admin */
+  private async checkAdminRole() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) return;
+
+    const { data, error: userErr } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!userErr && data?.role === 'admin') {
+      this.isAdmin = true;
+    }
+  }
+
   /** ───────────────────────────────
    * Load Setlist + Songs
    * ─────────────────────────────── */
@@ -110,12 +122,11 @@ export class SetlistDetailComponent implements OnInit, OnDestroy {
 
       if (error) throw error;
 
-      // ✅ Sync notes and force change detection
       this.setlist = setlist || {};
       this.newName = setlist?.name || '';
       this.newNotes = setlist?.notes || '';
       this.setlist.notes = this.newNotes;
-      this.cdr.detectChanges(); // ✅ ensures markdown renders right away
+      this.cdr.detectChanges();
 
       // Load songs
       const { data: setlistSongs, error: slErr } = await supabase
@@ -152,7 +163,7 @@ export class SetlistDetailComponent implements OnInit, OnDestroy {
       this.errorMsg = err?.message || 'Failed to load setlist.';
     } finally {
       this.loading = false;
-      this.cdr.detectChanges(); // ensure updates reflect
+      this.cdr.detectChanges();
     }
   }
 
@@ -165,10 +176,14 @@ export class SetlistDetailComponent implements OnInit, OnDestroy {
   }
 
   goToSongCatalog() {
+    if (!this.isAdmin) return;
     this.router.navigate(['/songs']);
   }
 
+  /** 🗑 Remove Song — Admin Only */
   async removeSong(setlistSongId: string) {
+    if (!this.isAdmin) return;
+
     this.actionLoading = setlistSongId;
     this.successMsg = null;
 
@@ -189,70 +204,68 @@ export class SetlistDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** 🔼🔽 Move Song — Admin Only */
   async moveSong(setlistSongId: string, direction: 'up' | 'down') {
-  const index = this.songs.findIndex((s) => s.setlistSongId === setlistSongId);
-  if (index === -1) return;
+    if (!this.isAdmin) return;
 
-  const neighborIndex = direction === 'up' ? index - 1 : index + 1;
-  if (neighborIndex < 0 || neighborIndex >= this.songs.length) return;
+    const index = this.songs.findIndex((s) => s.setlistSongId === setlistSongId);
+    if (index === -1) return;
 
-  // 🎬 Capture pre-move positions
-  const list = document.querySelectorAll<HTMLElement>('.song-row');
-  const firstRects = Array.from(list).map((el) => el.getBoundingClientRect());
+    const neighborIndex = direction === 'up' ? index - 1 : index + 1;
+    if (neighborIndex < 0 || neighborIndex >= this.songs.length) return;
 
-  // 🧩 Swap in-memory
-  [this.songs[index], this.songs[neighborIndex]] = [
-    this.songs[neighborIndex],
-    this.songs[index],
-  ];
+    // 🎬 Capture pre-move positions
+    const list = document.querySelectorAll<HTMLElement>('.song-row');
+    const firstRects = Array.from(list).map((el) => el.getBoundingClientRect());
 
-  // ✅ Trigger re-render but wait a frame before measuring again
-  this.cdr.detectChanges();
-  await new Promise((r) => setTimeout(r));
+    // 🧩 Swap in-memory
+    [this.songs[index], this.songs[neighborIndex]] = [
+      this.songs[neighborIndex],
+      this.songs[index],
+    ];
 
-  // 🎥 Capture post-move positions
-  const lastRects = Array.from(list).map((el) => el.getBoundingClientRect());
+    this.cdr.detectChanges();
+    await new Promise((r) => setTimeout(r));
 
-  // 🪄 Apply FLIP animation (First–Last–Invert–Play)
-  list.forEach((el, i) => {
-    const dx = firstRects[i].left - lastRects[i].left;
-    const dy = firstRects[i].top - lastRects[i].top;
-    if (dx || dy) {
-      el.style.transform = `translate(${dx}px, ${dy}px)`;
-      el.style.transition = 'none';
-      requestAnimationFrame(() => {
-        el.style.transform = '';
-        el.style.transition = 'transform 300ms ease';
-      });
+    const lastRects = Array.from(list).map((el) => el.getBoundingClientRect());
+    list.forEach((el, i) => {
+      const dx = firstRects[i].left - lastRects[i].left;
+      const dy = firstRects[i].top - lastRects[i].top;
+      if (dx || dy) {
+        el.style.transform = `translate(${dx}px, ${dy}px)`;
+        el.style.transition = 'none';
+        requestAnimationFrame(() => {
+          el.style.transform = '';
+          el.style.transition = 'transform 300ms ease';
+        });
+      }
+    });
+
+    this.songs.forEach((s, i) => (s.position = i + 1));
+
+    try {
+      console.log('🟡 Saving new song order...');
+      const updates = this.songs.map((s) => ({
+        id: s.setlistSongId,
+        position: s.position,
+      }));
+
+      const { error } = await supabase
+        .from('setlist_songs')
+        .upsert(updates, { onConflict: 'id' });
+
+      if (error) throw error;
+      this.successMsg = '✅ Song order saved!';
+    } catch (err: any) {
+      console.error('❌ Supabase reorder error:', err);
+      this.errorMsg = err.message || 'Failed to reorder songs.';
     }
-  });
-
-  // 🔢 Update local positions
-  this.songs.forEach((s, i) => (s.position = i + 1));
-
-  // 💾 Save to Supabase (after animation starts)
-  try {
-    console.log('🟡 Saving new song order...');
-    const updates = this.songs.map((s) => ({
-      id: s.setlistSongId,
-      position: s.position,
-    }));
-
-    const { data, error } = await supabase
-      .from('setlist_songs')
-      .upsert(updates, { onConflict: 'id' });
-
-    if (error) throw error;
-    console.log('🟢 Order saved successfully!');
-    this.successMsg = '✅ Song order saved!';
-  } catch (err: any) {
-    console.error('❌ Supabase reorder error:', err);
-    this.errorMsg = err.message || 'Failed to reorder songs.';
   }
-}
 
-
+  /** 💾 Save name — Admin Only */
   async saveName() {
+    if (!this.isAdmin) return;
+
     const name = this.newName.trim();
     if (!name) return;
 
@@ -270,7 +283,9 @@ export class SetlistDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** 📝 Notes editing */
   startEditingNotes() {
+    if (!this.isAdmin) return;
     this.editingNotes = true;
     this.newNotes = this.setlist.notes || '';
   }
@@ -281,10 +296,13 @@ export class SetlistDetailComponent implements OnInit, OnDestroy {
   }
 
   onNoteInput() {
+    if (!this.isAdmin) return;
     this.noteChanges$.next(this.newNotes);
   }
 
   async saveNotes(auto = false) {
+    if (!this.isAdmin) return;
+
     const text = this.newNotes.trim();
     try {
       const { error } = await supabase
@@ -295,7 +313,7 @@ export class SetlistDetailComponent implements OnInit, OnDestroy {
 
       this.setlist.notes = text;
       this.newNotes = text;
-      this.cdr.detectChanges(); // ✅ ensures live preview updates
+      this.cdr.detectChanges();
 
       if (!auto) {
         this.editingNotes = false;
@@ -307,8 +325,11 @@ export class SetlistDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** 🗑 Delete setlist — Admin Only */
   async deleteSetlist() {
+    if (!this.isAdmin) return;
     if (!confirm('Are you sure you want to delete this setlist?')) return;
+
     try {
       await supabase.from('setlist_songs').delete().eq('setlist_id', this.setlist.id);
       await supabase.from('setlists').delete().eq('id', this.setlist.id);
@@ -317,6 +338,10 @@ export class SetlistDetailComponent implements OnInit, OnDestroy {
       this.errorMsg = err?.message || 'Failed to delete setlist.';
     }
   }
+  goToSongDetail(songId: string) {
+  if (!songId) return;
+  this.router.navigate(['/songs', songId]);
+}
 
   exportText() {
     const lines = this.songs.map(

@@ -2,17 +2,18 @@
   <div class="container setlist-catalog">
     <h1>📋 Setlists</h1>
 
-    <!-- Create new setlist -->
-    <div class="new-setlist">
+    <!-- Create new setlist (Admin Only) -->
+    <div class="new-setlist" *ngIf="isAdmin">
       <input
         type="text"
         [(ngModel)]="newSetlistName"
         placeholder="New setlist name"
         class="input"
       />
-      <button class="btn btn-primary"
-              (click)="createSetlist()"
-              [disabled]="creating || !newSetlistName.trim()">
+      <button
+        class="btn btn-primary"
+        (click)="createSetlist()"
+        [disabled]="creating || !newSetlistName.trim()">
         {{ creating ? 'Creating…' : '➕ Create Setlist' }}
       </button>
     </div>
@@ -24,8 +25,7 @@
         [(ngModel)]="songSearch"
         placeholder="Search setlists by song name..."
         class="input"
-        (input)="onSongSearchChange()"
-      />
+        (input)="onSongSearchChange()" />
       <button class="btn btn-ghost" (click)="clearSearch()" *ngIf="songSearch">
         ✖ Clear
       </button>
@@ -44,7 +44,11 @@
     <!-- Setlist results -->
     <div class="setlist-grid" *ngIf="!loading && setlists.length > 0">
       <div class="setlist-card" *ngFor="let s of setlists">
-        <h3><a [routerLink]="['/setlists', s.id]">{{ s.name }}</a></h3>
+        <h3>
+          <a [routerLink]="['/setlists', s.id]" class="setlist-link">
+            {{ s.name }}
+          </a>
+        </h3>
 
         <div *ngIf="s.songs && s.songs.length > 0; else noSongs">
           <ul>
@@ -56,6 +60,7 @@
             </li>
           </ul>
         </div>
+
         <ng-template #noSongs>
           <p class="muted">No songs added yet.</p>
         </ng-template>

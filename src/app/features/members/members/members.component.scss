@@ -80,15 +80,15 @@
     margin: 1.5rem 0;
   }
 
-  /* ===== Member Directory ===== */
-  .member-directory {
+  /* ===== User Directory ===== */
+  .user-directory {
     h2 {
       font-size: 1.4rem;
       margin-bottom: 1rem;
     }
   }
 
-  .member-list {
+  .user-list {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -97,7 +97,7 @@
     gap: 1rem;
   }
 
-  .member-row {
+  .user-row {
     background: #fff;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
@@ -112,7 +112,7 @@
       box-shadow: var(--shadow-hover);
     }
 
-    .member-info {
+    .user-info {
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
@@ -127,7 +127,7 @@
         font-size: 0.9rem;
       }
 
-      .role {
+      .role-badge {
         display: inline-block;
         background: var(--primary-fade);
         color: var(--primary);
@@ -140,8 +140,9 @@
       }
     }
 
-    .member-actions {
+    .user-actions {
       display: flex;
+      flex-wrap: wrap;
       gap: 0.5rem;
       margin-top: 0.5rem;
 
@@ -159,49 +160,6 @@
         }
       }
     }
-
-    /* ===== Assignments (Event List) ===== */
-    .assignments {
-      margin-top: 0.75rem;
-      border-top: 1px solid rgba(0, 0, 0, 0.06);
-      padding-top: 0.75rem;
-
-      h4 {
-        font-size: 0.9rem;
-        margin-bottom: 0.4rem;
-        color: var(--primary);
-      }
-
-      .event-item {
-        font-size: 0.9rem;
-        margin-bottom: 0.5rem;
-      }
-
-      .setlist-info {
-        margin-top: 0.25rem;
-
-        .setlist-link {
-          color: var(--primary);
-          font-weight: 600;
-          text-decoration: none;
-        }
-
-        .setlist-link:hover {
-          text-decoration: underline;
-        }
-
-        .songs {
-          margin: 0.3rem 0 0 1rem;
-          padding: 0;
-          list-style: disc;
-
-          li {
-            font-size: 0.85rem;
-            color: var(--muted);
-          }
-        }
-      }
-    }
   }
 
   /* ===== Muted Text & Utilities ===== */
@@ -216,11 +174,13 @@
       gap: 0.75rem;
     }
 
-    .member-list {
+    .user-list {
       grid-template-columns: 1fr;
     }
   }
 }
+
+/* ===== Role Badges ===== */
 .role-admin {
   background: #ffe8e8;
   color: #b93131;

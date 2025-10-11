@@ -230,3 +230,154 @@
     font-style: italic;
   }
 }
+
+.setlist-detail {
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+
+    h1 {
+      flex: 1;
+      text-align: center;
+      color: var(--primary);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin: 0;
+    }
+
+    .title-actions {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      h1 {
+        text-align: center;
+      }
+    }
+
+    /* ✅ Ensures centered layout stays correct even without right-side buttons */
+    .header-buttons {
+      min-width: 130px; /* reserve space equal to button group width */
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    /* 🩹 When user is not admin and header-buttons are hidden, reserve the same space */
+    &:not(:has(.header-buttons))::after {
+      content: "";
+      display: block;
+      width: 130px; /* same width as header-buttons */
+    }
+  }
+}
+
+.song-row.clickable {
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: #f9fafb;
+  }
+}
+
+/* Keep header balanced even without admin buttons */
+.header-placeholder {
+  min-width: 130px; /* matches button group width */
+}
+
+/* Make song rows clickable */
+.song-row.clickable {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.song-row.clickable:hover {
+  background: #f9fafb;
+}
+.setlist-detail {
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+    flex-wrap: wrap; /* ✅ allows wrapping on small screens */
+
+    h1 {
+      flex: 1;
+      text-align: center;
+      color: var(--primary);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin: 0;
+    }
+
+    .title-actions {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+
+      h1 {
+        text-align: center;
+      }
+    }
+
+    /* ✅ Header buttons group */
+    .header-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      flex-wrap: wrap; /* ✅ buttons wrap naturally instead of overlapping */
+      min-width: 130px;
+
+      button {
+        white-space: nowrap;
+      }
+    }
+
+    /* 🩹 Placeholder to maintain centering when no admin buttons exist */
+    &:not(:has(.header-buttons))::after {
+      content: "";
+      display: block;
+      width: 130px;
+    }
+
+    /* 📱 Mobile adjustments */
+    @media (max-width: 640px) {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.75rem;
+
+      h1 {
+        text-align: center;
+        margin-bottom: 0.25rem;
+      }
+
+      .title-actions {
+        flex: none;
+        width: 100%;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .header-buttons {
+        justify-content: center;
+        width: 100%;
+        margin-top: 0.5rem;
+
+        button {
+          flex: 1 1 auto;
+          min-width: 110px;
+        }
+      }
+    }
+  }
+}

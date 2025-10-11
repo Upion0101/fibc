@@ -10,78 +10,79 @@
       </p>
     </div>
 
-    <!-- 📊 Quick Stats -->
-    <div class="stats-grid">
-      <div class="stat-card" *ngFor="let s of stats">
-        <div class="stat-icon">{{ s.icon }}</div>
-        <div class="stat-count">
-          <ng-container *ngIf="!statsLoading && s.count !== null; else loadingCount">
-            <span class="fade-in">{{ s.count }}</span>
-          </ng-container>
-          <ng-template #loadingCount>
-            <span class="skeleton"></span>
-          </ng-template>
-        </div>
-        <div class="stat-label">{{ s.label }}</div>
-      </div>
-    </div>
-
-    <!-- 📅 Next Event -->
-    <ng-container>
-      <!-- When still loading, show shimmer -->
-      <div class="next-event loading" *ngIf="eventLoading">
-        <h2>Next Event</h2>
-        <p><span class="skeleton" style="width: 60%; height: 1rem;"></span></p>
-        <p><span class="skeleton" style="width: 40%; height: 1rem;"></span></p>
-      </div>
-
-      <!-- When event found -->
-      <div class="next-event" *ngIf="!eventLoading && nextEvent">
-        <h2>Next Event</h2>
-        <p class="event-name">{{ nextEvent.name }}</p>
-        <p class="event-date">
-          {{ nextEvent.date | date:'fullDate' }} · {{ nextEvent.time }} ({{ nextEvent.type }})
-        </p>
-        <a routerLink="/calendar" class="btn btn-primary">View Calendar</a>
-      </div>
-
-      <!-- When no event found -->
-      <div class="next-event empty" *ngIf="!eventLoading && !nextEvent">
-        <h2>No Upcoming Events</h2>
-        <p class="muted">You don’t have any events scheduled yet.</p>
-        <a routerLink="/calendar" class="btn btn-accent">Open Calendar</a>
+    <!-- 🕒 Pending User Notice -->
+    <ng-container *ngIf="role === 'pending'">
+      <div class="awaiting-approval">
+        <h2>⏳ Awaiting Membership Approval</h2>
+        <p>Your account is currently under review. Once approved, you’ll gain full access to the members dashboard.</p>
+        <p class="muted">Please check back later or contact an admin if you believe this is an error.</p>
       </div>
     </ng-container>
 
-    <!-- 🔧 Tool Cards -->
-    <div class="dashboard">
-      <div class="card">
-        <div class="icon">🎶</div>
-        <h3>Songs</h3>
-        <p>Manage library of all worship songs.</p>
-        <a routerLink="/songs" class="btn btn-primary">Open</a>
+    <!-- 📊 Dashboard for Members/Admins -->
+    <ng-container *ngIf="role !== 'pending'">
+
+      <!-- Combined Stats + Redirect Cards -->
+      <div class="dashboard-grid">
+        <a *ngFor="let c of cards" [routerLink]="c.link" class="dashboard-card">
+          <div class="icon">{{ c.icon }}</div>
+          <h3>{{ c.label }}</h3>
+
+          <div class="stat-count">
+            <ng-container *ngIf="!statsLoading && c.count !== null; else loadingCount">
+              <span class="fade-in">{{ c.count }}</span>
+            </ng-container>
+            <ng-template #loadingCount>
+              <span class="skeleton"></span>
+            </ng-template>
+          </div>
+
+          <p class="description">{{ c.description }}</p>
+
+          <div class="tap-hint">
+            <span>Open</span> <span class="arrow">→</span>
+          </div>
+        </a>
       </div>
 
-      <div class="card">
-        <div class="icon">📋</div>
-        <h3>Setlists</h3>
-        <p>Create and organize collections of songs.</p>
-        <a routerLink="/setlists" class="btn btn-primary">Open</a>
-      </div>
+      <!-- 📅 Next Event -->
+      <ng-container>
+        <div class="next-event loading" *ngIf="eventLoading">
+          <h2>Next Event</h2>
+          <p><span class="skeleton" style="width: 60%; height: 1rem;"></span></p>
+          <p><span class="skeleton" style="width: 40%; height: 1rem;"></span></p>
+        </div>
 
-      <div class="card">
-        <div class="icon">📅</div>
-        <h3>Calendar</h3>
-        <p>Schedule services & rehearsals, assign setlists and members.</p>
-        <a routerLink="/calendar" class="btn btn-primary">Open</a>
-      </div>
+        <div class="next-event" *ngIf="!eventLoading && nextEvent">
+          <h2>Next Event</h2>
+          <p class="event-name">{{ nextEvent.name }}</p>
+          <p class="event-date">
+            {{ nextEvent.date | date:'fullDate' }} · {{ nextEvent.time }} ({{ nextEvent.type }})
+          </p>
+          <a routerLink="/calendar" class="btn btn-primary">View Calendar</a>
+        </div>
 
-      <div class="card">
-        <div class="icon">👥</div>
-        <h3>Members</h3>
-        <p>View and manage worship team roster.</p>
-        <a routerLink="/members-admin" class="btn btn-primary">Open</a>
-      </div>
+        <div class="next-event empty" *ngIf="!eventLoading && !nextEvent">
+          <h2>No Upcoming Events</h2>
+          <p class="muted">You don’t have any events scheduled yet.</p>
+          <a routerLink="/calendar" class="btn btn-accent">Open Calendar</a>
+        </div>
+      </ng-container>
+    </ng-container>
+
+    <!-- 👑 Admin-only Pending Users -->
+    <div *ngIf="role === 'admin' && pendingUsers.length > 0" class="pending-section">
+      <h2>Pending Users</h2>
+      <ul>
+        <li *ngFor="let u of pendingUsers">
+          <span>{{ u.name || u.email }}</span>
+          <button class="btn btn-small btn-approve"
+                  (click)="promoteToMember(u.id)"
+                  [disabled]="approving">
+            ✅ Approve
+          </button>
+        </li>
+      </ul>
     </div>
 
   </div>

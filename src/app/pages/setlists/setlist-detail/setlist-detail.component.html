@@ -14,13 +14,16 @@
         <div class="title-actions">
           <ng-container *ngIf="!editingName; else editNameTpl">
             <h1>{{ setlist.name }}</h1>
-            <button class="btn btn-ghost btn-small" (click)="editingName = true">
+            <button
+              *ngIf="isAdmin"
+              class="btn btn-ghost btn-small"
+              (click)="editingName = true">
               ✏️ Edit Setlist Name
             </button>
           </ng-container>
 
           <ng-template #editNameTpl>
-            <div class="edit-box">
+            <div class="edit-box" *ngIf="isAdmin">
               <input [(ngModel)]="newName" class="input" placeholder="Enter setlist name" />
               <button class="btn btn-primary btn-small" (click)="saveName()">Save</button>
               <button class="btn btn-ghost btn-small" (click)="editingName = false">Cancel</button>
@@ -28,10 +31,14 @@
           </ng-template>
         </div>
 
-        <div class="header-buttons">
+        <div class="header-buttons" *ngIf="isAdmin; else headerPlaceholder">
           <button class="btn btn-primary" (click)="goToSongCatalog()">➕ Add Songs</button>
           <button class="btn btn-danger" (click)="deleteSetlist()">🗑 Delete</button>
         </div>
+        <ng-template #headerPlaceholder>
+          <!-- Keeps name centered even without admin buttons -->
+          <div class="header-placeholder"></div>
+        </ng-template>
       </div>
 
       <p class="muted">Total: {{ songs.length }} songs</p>
@@ -41,33 +48,32 @@
         <ul class="song-list" [@listAnim]="songs.length">
           <li
             *ngFor="let song of songs; let i = index; trackBy: trackBySetlistSongId"
-            class="song-row"
-          >
+            class="song-row clickable"
+            (click)="goToSongDetail(song.id)">
+            
             <div class="song-info">
               <strong>#{{ i + 1 }}</strong> — {{ song.title }}
               <span class="muted">({{ song.artist || 'Unknown Artist' }})</span>
             </div>
 
-            <div class="song-actions">
+            <!-- Only show action buttons for admins -->
+            <div class="song-actions" *ngIf="isAdmin">
               <button
                 class="btn btn-ghost btn-small"
-                (click)="moveSong(song.setlistSongId, 'up')"
-                title="Move Up"
-              >
+                (click)="moveSong(song.setlistSongId, 'up'); $event.stopPropagation()"
+                title="Move Up">
                 ⬆
               </button>
               <button
                 class="btn btn-ghost btn-small"
-                (click)="moveSong(song.setlistSongId, 'down')"
-                title="Move Down"
-              >
+                (click)="moveSong(song.setlistSongId, 'down'); $event.stopPropagation()"
+                title="Move Down">
                 ⬇
               </button>
               <button
                 class="btn btn-ghost btn-small"
-                (click)="removeSong(song.setlistSongId)"
-                [disabled]="actionLoading === song.setlistSongId"
-              >
+                (click)="removeSong(song.setlistSongId); $event.stopPropagation()"
+                [disabled]="actionLoading === song.setlistSongId">
                 {{ actionLoading === song.setlistSongId ? 'Removing…' : 'Remove' }}
               </button>
             </div>
@@ -86,7 +92,6 @@
         <!-- View mode -->
         <ng-container *ngIf="!editingNotes; else editNotesTpl">
           <ng-container *ngIf="newNotes?.trim(); else noNotes">
-            <!-- ✅ Shows Markdown preview immediately -->
             <markdown [data]="newNotes"></markdown>
           </ng-container>
 
@@ -94,23 +99,27 @@
             <p class="muted">No notes yet. Add reflections or messages here.</p>
           </ng-template>
 
-          <button class="btn btn-ghost btn-small" (click)="startEditingNotes()">✏️ Edit Notes</button>
+          <button
+            *ngIf="isAdmin"
+            class="btn btn-ghost btn-small"
+            (click)="startEditingNotes()">✏️ Edit Notes</button>
         </ng-container>
 
         <!-- Edit mode -->
         <ng-template #editNotesTpl>
-          <textarea
-            [(ngModel)]="newNotes"
-            (ngModelChange)="onNoteInput()"
-            rows="8"
-            class="textarea"
-            placeholder="Write thoughts, messages, or reflections here..."
-          ></textarea>
+          <div *ngIf="isAdmin">
+            <textarea
+              [(ngModel)]="newNotes"
+              (ngModelChange)="onNoteInput()"
+              rows="8"
+              class="textarea"
+              placeholder="Write thoughts, messages, or reflections here..."></textarea>
 
-          <div class="edit-box">
-            <button class="btn btn-primary btn-small" (click)="saveNotes()">💾 Save Now</button>
-            <button class="btn btn-ghost btn-small" (click)="cancelEditingNotes()">Cancel</button>
-            <span class="muted auto-msg">💡 Auto-saves after you stop typing.</span>
+            <div class="edit-box">
+              <button class="btn btn-primary btn-small" (click)="saveNotes()">💾 Save Now</button>
+              <button class="btn btn-ghost btn-small" (click)="cancelEditingNotes()">Cancel</button>
+              <span class="muted auto-msg">💡 Auto-saves after you stop typing.</span>
+            </div>
           </div>
         </ng-template>
       </div>

@@ -32,11 +32,30 @@ export class CalendarComponent {
   events: UiEvent[] = [];
   showSubscribeModal = false;
 
+  isAdmin = false; // ✅ controls edit privileges
+
   constructor(private sanitizer: DomSanitizer, private router: Router) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.setEmbedFromKnownGood();
+    await this.checkAdminRole();
     this.loadEvents().catch(() => {});
+  }
+
+  /** ✅ Load user role from Supabase */
+  private async checkAdminRole() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) return;
+
+    const { data, error: userErr } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!userErr && data?.role === 'admin') {
+      this.isAdmin = true;
+    }
   }
 
   private setEmbedFromKnownGood() {
@@ -66,12 +85,8 @@ export class CalendarComponent {
 
     if (isApple) {
       const webcalUrl = this.outlookSubscribeUrl.replace(/^https?:\/\//, 'webcal://');
-
-      // Attempt to open Apple Calendar directly
       try {
         window.location.href = webcalUrl;
-
-        // In case the protocol handler is blocked, fallback after 2s
         setTimeout(() => {
           if (!document.hidden) {
             alert(
@@ -146,10 +161,13 @@ export class CalendarComponent {
   }
 
   openEvent(id: string) {
-    this.router.navigate(['/calendar', id]);
+    if (this.isAdmin) {
+      this.router.navigate(['/calendar', id]);
+    }
   }
 
   async deleteEvent(id: string) {
+    if (!this.isAdmin) return;
     if (!confirm('Remove this event?')) return;
 
     try {
@@ -172,6 +190,8 @@ export class CalendarComponent {
   }
 
   createEvent() {
-    this.router.navigate(['/calendar/new']);
+    if (this.isAdmin) {
+      this.router.navigate(['/calendar/new']);
+    }
   }
 }

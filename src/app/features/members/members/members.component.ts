@@ -1,4 +1,3 @@
-// src/app/features/members/members.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -12,208 +11,181 @@ import { supabase } from '../../../../../supabaseClient';
   styleUrls: ['./members.component.scss']
 })
 export class MembersComponent implements OnInit {
-  members: any[] = [];
-  currentUserMember: any = null; // Logged-in user's record
+  users: any[] = [];
+  pendingUsers: any[] = [];
+  activeUsers: any[] = [];
+  currentUser: any = null;
   loading = true;
   userId: string | null = null;
   isAdmin = false;
 
-  // ===== Computed getters for counts (used in template) =====
+  // ===== Computed getters for counts =====
   get adminCount(): number {
-    return this.members.filter(m => m.role === 'admin').length;
+    return this.activeUsers.filter(u => u.role === 'admin').length;
   }
-
   get memberCount(): number {
-    return this.members.filter(m => m.role === 'member').length;
+    return this.activeUsers.filter(u => u.role === 'member').length;
   }
 
   async ngOnInit() {
     await this.loadCurrentUser();
-    await this.loadMembers();
+    await this.loadUsers();
   }
 
   // ===== Load Current Authenticated User =====
   async loadCurrentUser() {
     const { data: { user }, error } = await supabase.auth.getUser();
-
-    if (error) {
-      console.error('❌ Error fetching current user:', error);
-      return;
-    }
-
-    if (!user) {
-      console.warn('⚠️ No logged-in user');
+    if (error || !user) {
+      console.warn('⚠️ No logged-in user or auth error:', error);
       return;
     }
 
     this.userId = user.id;
 
-    // Fetch their matching member record
-    const { data: memberData, error: memberError } = await supabase
-      .from('members')
+    const { data, error: userError } = await supabase
+      .from('users')
       .select('*')
-      .eq('user_id', user.id)
-      .single();
+      .eq('id', user.id)
+      .maybeSingle();
 
-    if (memberError) {
-      console.error('❌ Error loading current user member record:', memberError);
-      return;
-    }
-
-    this.currentUserMember = memberData;
-
-    // ✅ Simple admin check for 2-role system
-    const role = memberData?.role?.toLowerCase();
-    this.isAdmin = role === 'admin';
+    if (userError) console.error('❌ Error loading current user:', userError);
+    this.currentUser = data;
+    this.isAdmin = data?.role?.toLowerCase() === 'admin';
   }
 
-  // ===== Load All Members =====
-  async loadMembers() {
+  // ===== Load All Users =====
+  async loadUsers() {
     this.loading = true;
 
     const { data, error } = await supabase
-      .from('members')
-      .select(`
-        id, name, email, role, user_id,
-        event_members (
-          events (
-            id, name, event_date, type,
-            setlists (
-              id, name,
-              setlist_songs (
-                position,
-                songs ( id, title, artist )
-              )
-            )
-          )
-        )
-      `)
+      .from('users')
+      .select('id, name, email, role, created_at')
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('❌ Error loading members:', error);
-      this.members = [];
-    } else {
-      this.members = (data || []).map((m: any) => ({
-        ...m,
-        assignments: m.event_members?.map((em: any) => ({
-          ...em.events,
-          setlist: em.events?.setlists
-        })) || []
-      }));
+      console.error('❌ Error loading users:', error);
+      this.users = [];
+      this.loading = false;
+      return;
     }
 
+    this.users = data || [];
+    this.pendingUsers = this.users.filter(u => u.role === 'pending');
+    this.activeUsers = this.users.filter(u => ['member', 'admin'].includes(u.role));
     this.loading = false;
   }
 
-  // ===== Add New Member (Admin Only) =====
-  async addMember() {
-    if (!this.isAdmin) {
-      alert('Only admins can add members.');
-      return;
-    }
-
-    const name = prompt('Enter member name:');
-    if (!name) return;
-
-    const email = prompt('Enter email (optional):');
-    const role = 'member'; // always default new members to "member"
-
-    const payload = {
-      user_id: null, // Admins can add members not linked to a Supabase user yet
-      name,
-      email,
-      role
-    };
-
-    const { error } = await supabase.from('members').insert(payload);
-
-    if (error) {
-      console.error('❌ Error adding member:', error);
-    } else {
-      console.log('✅ Member added:', name);
-      await this.loadMembers();
-    }
-  }
-
-  // ===== Edit Member (Current User or Admin) =====
-  async editMember(member: any) {
-    const canEdit = this.isAdmin || member.user_id === this.userId;
+  // ===== Edit User =====
+  async editUser(userRecord: any) {
+    const canEdit = this.isAdmin || userRecord.id === this.userId;
     if (!canEdit) {
-      alert('You don’t have permission to edit this member.');
+      alert('You don’t have permission to edit this user.');
       return;
     }
 
-    const newName = prompt('Edit name:', member.name);
+    const newName = prompt('Edit name:', userRecord.name);
     if (!newName) return;
 
     const { error } = await supabase
-      .from('members')
+      .from('users')
       .update({ name: newName })
-      .eq('id', member.id);
+      .eq('id', userRecord.id);
 
     if (error) {
-      console.error('❌ Error updating member:', error);
+      console.error('❌ Error updating user:', error);
     } else {
-      console.log('✅ Member updated:', member.id);
-      await this.loadMembers();
+      console.log('✅ User updated:', userRecord.id);
+      await this.loadUsers();
     }
   }
 
   // ===== Change Role (Admin Only) =====
-  async changeRole(member: any, newRole: 'admin' | 'member') {
+  async changeRole(userRecord: any, newRole: 'admin' | 'member') {
     if (!this.isAdmin) {
       alert('Only admins can change roles.');
       return;
     }
 
-    if (member.user_id === this.userId) {
+    if (userRecord.id === this.userId) {
       alert('You cannot change your own role.');
       return;
     }
 
-    if (member.role === newRole) return;
+    if (userRecord.role === newRole) return;
 
     const { error } = await supabase
-      .from('members')
+      .from('users')
       .update({ role: newRole })
-      .eq('id', member.id);
+      .eq('id', userRecord.id);
 
     if (error) {
       console.error('❌ Error changing role:', error);
     } else {
-      console.log(`✅ Changed ${member.name}'s role to ${newRole}`);
-      await this.loadMembers();
+      console.log(`✅ Changed ${userRecord.name}'s role to ${newRole}`);
+      await this.loadUsers();
     }
   }
 
-  // ===== Delete Member (Admin Only) =====
-  async deleteMember(id: string) {
+  // ===== Approve Pending User =====
+  async approveUser(userRecord: any) {
     if (!this.isAdmin) {
-      alert('Only admins can delete members.');
+      alert('Only admins can approve members.');
       return;
     }
 
-    const member = this.members.find(m => m.id === id);
-    if (member?.user_id === this.userId) {
+    const { error } = await supabase
+      .from('users')
+      .update({ role: 'member' })
+      .eq('id', userRecord.id);
+
+    if (error) {
+      console.error('❌ Error approving user:', error);
+    } else {
+      console.log(`✅ Approved ${userRecord.name}`);
+      await this.loadUsers();
+    }
+  }
+
+  // ===== Reject (Delete) Pending User =====
+  async rejectUser(id: string) {
+    if (!this.isAdmin) {
+      alert('Only admins can reject members.');
+      return;
+    }
+
+    if (!confirm('Are you sure you want to reject this user?')) return;
+
+    const { error } = await supabase.from('users').delete().eq('id', id);
+
+    if (error) {
+      console.error('❌ Error rejecting user:', error);
+    } else {
+      console.log('✅ Rejected user:', id);
+      await this.loadUsers();
+    }
+  }
+
+  // ===== Delete User (Admin Only) =====
+  async deleteUser(id: string) {
+    if (!this.isAdmin) {
+      alert('Only admins can delete users.');
+      return;
+    }
+
+    if (id === this.userId) {
       alert('You cannot delete yourself.');
       return;
     }
 
-    if (!confirm('Are you sure you want to remove this member?')) return;
+    if (!confirm('Are you sure you want to remove this user?')) return;
 
-    const { error, count } = await supabase
-      .from('members')
-      .delete({ count: 'exact' })
-      .eq('id', id);
+    const { error } = await supabase.from('users').delete().eq('id', id);
 
     if (error) {
-      console.error('❌ Error deleting member:', error);
-    } else if (count === 0) {
-      console.warn('⚠️ No member deleted — likely blocked by RLS or wrong ID');
+      console.error('❌ Error deleting user:', error);
     } else {
-      console.log('✅ Member deleted:', id);
-      await this.loadMembers();
+      console.log('✅ User deleted:', id);
+      await this.loadUsers();
     }
   }
 }
